@@ -1,0 +1,30 @@
+#### Subject: Setup internal network
+#### Author:  Caseraw
+#### Date:    05-09-2016
+
+--------------------------------------------------------------------------------
+Use below commands to add, modify, delete and list internal network.
+
+Add:
+VBoxManage natnetwork add --netname natnet1 --network "192.168.15.0/24" --enable
+VBoxManage natnetwork add --netname natnet1 --network "192.168.15.0/24" --enable --dhcp on
+
+Modify:
+VBoxManage natnetwork modify --netname natnet1 --dhcp on
+VBoxManage natnetwork modify --netname natnet1 --dhcp off
+VBoxManage natnetwork modify --netname natnet1 --port-forward-4 "ssh:tcp:[]:1022:[192.168.15.5]:22"
+VBoxManage natnetwork modify --netname natnet1 --port-forward-4 delete ssh
+
+Start/Stop:
+VBoxManage natnetwork start --netname natnet1
+VBoxManage natnetwork stop --netname natnet1
+
+Remove:
+VBoxManage natnetwork remove --netname natnet1
+
+Bind to interface:
+VBoxManage setextradata global "NAT/win-nat-test-0/SourceIp4" 192.168.1.185
+
+List:
+VBoxManage list natnetworks
+--------------------------------------------------------------------------------
