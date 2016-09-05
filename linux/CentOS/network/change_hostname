@@ -1,0 +1,38 @@
+#### Subject: Change the hostname of a machine.
+#### Author:   Caseraw
+#### Date:     05-09-2016
+
+--------------------------------------------------------------------------------
+Change 2 files and add the below contents followed by a network restart or a reboot.
+
+--------------------------------------------------------------------------------
+File: /etc/sysconfig/network
+Contents:
+
+NETWORKING=yes
+FORWARD_IPV4=yes
+HOSTNAME=ansible-dev1.caseraw.dev
+
+Comments:
+Keep in mind that this HOSTNAME is just an example. Change it to your own liking.
+
+Related links:
+http://www.tldp.org/LDP/solrhe/Securing-Optimizing-Linux-RH-Edition-v1.3/chap9sec93.html
+
+--------------------------------------------------------------------------------
+File: /etc/hosts
+Contents:
+
+192.168.0.24    ansible-dev1.caseraw.dev        ansible-dev1
+
+Comments: Keep in mind that this is just an example.
+
+--------------------------------------------------------------------------------
+Commands:
+
+$ systemctl restart network
+$ reboot now
+
+Comments:
+If you don't want a reboot, then just restart the network service. Keep in mind that the terminal prompt will only update on new session.
+If you do want to reboot, then just perform this instead of network restart. A reboot is recommended.
