@@ -30,6 +30,7 @@ Comments: Keep in mind that this is just an example.
 --------------------------------------------------------------------------------
 Commands:
 
+$ hostnamectl set-hostname ansible-dev1
 $ systemctl restart network
 $ reboot now
 
