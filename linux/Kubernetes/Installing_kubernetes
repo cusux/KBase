@@ -1,0 +1,85 @@
+#### Subject: Installing Kubernetes
+#### Author:  Caseraw
+#### Date:    02-10-2016
+
+--------------------------------------------------------------------------------
+All servers have to have NTP installed and running.
+This is a required dependency for accuracy.
+
+Install NTP:
+yum install -y ntpd
+
+Start and enable:
+systemctl enable ntpd && systemctl start ntdp
+
+--------------------------------------------------------------------------------
+Set the internal IP and Hostnames for the master and the minions in /etc/hosts.
+
+Edit: /etc/hosts
+
+--------------------------------------------------------------------------------
+Add yum repo for docker and perform yum update on master and minions.
+
+Add file: /etc/yum.repos.d/virt7-docker-common-release.repo
+
+Contents:
+
+[virt7-docker-commin-release]
+name=cirt7-docker-common-release
+baseurl=https://cbs.centos.org/repos/virt7-docker-common-release/x86_64/os/
+gpgcheck=0
+
+Follow up command:
+yum update -y
+
+--------------------------------------------------------------------------------
+For testing purposes disable "iptables" and "firewalld".
+This is just to prevent security rules from interrupting during this test.
+
+--------------------------------------------------------------------------------
+Install docker and kubernetes:
+yum install -y --enablerepo-virt7-docker-common-release kubernetes docker
+
+--------------------------------------------------------------------------------
+Configure the master controller.
+
+Edit the config file: /etc/kubernetes/config
+
+Edit/add the following contents:
+
+KUBE_LOGTOSTDERR="--logtostderr=true"
+KUBE_LOG_LEVEL="--v=0"
+KUBE_ALLOW_PRIV="--allow-privileged=false"
+KUBE_MASTER="--master=http://centos-master:8080"
+KUBE_ETCD_SERVERS="--etcd-servers=http://centos-master:2379"
+
+--------------------------------------------------------------------------------
+Edit the etcd configuration file.
+
+Edit: /etc/etcd/etcd.conf
+
+Edit/add the following contents:
+
+ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:2379"
+ETCD_ADVERTISE_CLIENT_URLS="http://0.0.0.0:2379"
+
+--------------------------------------------------------------------------------
+Configure the API server.
+
+Edit the config file: /etc/kubernetes/apiserver
+
+Edit/add the following contents:
+
+KUBE_API_ADDRESS="--address=0.0.0.0"
+KUBE_API_PORT="--port=8080"
+KUBELET_PORT="--kubelet-port=10250"
+
+Comment out:
+KUBE_ADMISSION_CONTROL
+
+--------------------------------------------------------------------------------
+Start a couple of services in sequence:
+
+systemctl enable etcd kube-apiserver kube-controller-manager kube-scheduler
+
+--------------------------------------------------------------------------------
