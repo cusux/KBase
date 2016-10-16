@@ -79,7 +79,6 @@ KUBE_ADMISSION_CONTROL
 
 --------------------------------------------------------------------------------
 Start a couple of services in sequence:
-
 systemctl enable etcd kube-apiserver kube-controller-manager kube-scheduler
 
 --------------------------------------------------------------------------------
