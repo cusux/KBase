@@ -1,0 +1,118 @@
+#### Subject:   Installing Jenkins
+#### Author:    Caseraw
+#### Date:      12-11-2016
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+Install steps ans requirements:
+
+yum install -y wget epel-release
+sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+sudo rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+sudo yum update -y
+sudo yum install -y jenkins java-1.8.0-openjdk nginx telnet net-tools setroubleshoot-server selinux-policy-devel
+
+(nginx is only to make sure we can proxy the 8080 port)
+(telnet net-tools elinks are additional just for troubleshooting)
+(setroubleshoot-server selinux-policy-devel is for SELinux)
+
+--------------------------------------------------------------------------------
+Make sure firewall rules do not block port 8080:
+
+systemctl status firewalld
+systemctl status iptables
+
+In this examples we do not use a firewall
+
+--------------------------------------------------------------------------------
+Enable jenkins service:
+
+sudo systemctl enable jenkins (ignore the jenkins sysV init while we are on systemd, you can still run this)
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+
+--------------------------------------------------------------------------------
+In most bare installations you will need nginx to proxy to port 8080.
+This may not work by default unless you have additional configuration done.
+
+Edit: sudo vi /etc/nginx/nginx.conf
+Add: a proxy_pass rule
+Example:
+
+    server {
+        listen       80 default_server;
+        listen       [::]:80 default_server;
+        server_name  _;
+        root         /usr/share/nginx/html;
+
+        # Load configuration files for the default server block.
+        include /etc/nginx/default.d/*.conf;
+
+        location / {
+            proxy_pass  http://127.0.0.1:8080;
+        }
+
+        error_page 404 /404.html;
+            location = /40x.html {
+        }
+
+        error_page 500 502 503 504 /50x.html;
+            location = /50x.html {
+        }
+    }
+
+Make sure nginx is enabled and running:
+sudo systemctl enable nginx
+sudo systemctl start nginx
+sudo systemctl status nginx
+
+Test on ports:
+telnet localhost 8080
+netstat -antulp | grep 8080
+
+Keep an eye out on SELinux!!! This may block.
+Check ports:    sudo sepolicy network -t http_port_t
+Add a port:     sudo semanage port -a -t http_port_t -p tcp 8080
+
+If SELinux is still failing to allow,try this as root:
+In my case I had:
+# sepolicy network -p 8080
+8080: tcp unreserved_port_t 1024-32767
+8080: udp unreserved_port_t 1024-32767
+8080: tcp http_cache_port_t 8080
+
+So I did:
+Check if it is still blocking nginx on dest port 8080:
+# tail -f /var/log/audit/audit.log
+
+Allow the denied rules for nginx:
+# grep nginx /var/log/audit/audit.log | audit2allow -M nginx
+
+Run the new policy:
+# semodule -i nginx.pp
+
+Reload nginx and jenkins:
+systemctl restart jenkins nginx
+
+--------------------------------------------------------------------------------
+Now jenkins is running and accessible, you need to unlock it:
+
+It is initially placed at: /var/lib/jenkins/secrets/initialAdminPassword
+
+After unlock it will start a SetupWizard.
+Choose to install suggested plugins and wait for the completion.
+
+--------------------------------------------------------------------------------
+Now perform some additional actions to fix warning on the jenkins main page.
+This includes adding some additional stuff to nginx.conf as displayed on the webpage.
+
+--------------------------------------------------------------------------------
+Now give the jenkins user a /bin/bash login and give it a new password.
+Also generate an ssh-key for this user with ssh-keygen and copy the rsa id to localhost with ssh-copy-id jenkins@localhost
+Also give jenkins user to have sudo rights, jenkins ALL=(ALL)   NOPASSWD: ALL
+Also in visudo disable requiretty with, !requiretty so you can be able to run remote shell commands from jenkins.
+
+If you use anther jenkins build slave node, then add the jenkins user there too.
+Also five it the same sudo rights and !requiretty setting.
+Now copy the ssh key to the slave node from the jenkins master user on the jenkins master.
+Also generate an SSH key on the slave and copy back to the master.
