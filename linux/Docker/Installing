@@ -1,0 +1,108 @@
+#### Subject:   Installing Docker
+#### Author:    Caseraw
+#### Date:      12-11-2016
+#### Remark:    Based on CentOS7
+
+Definitions:
+ephemeral = brief, momentary, ephemeral, transient, transitory, fugitive
+
+--------------------------------------------------------------------------------
+Create a yum docket repository:
+
+Create a file in: /etc/yum.repos.d/docker.repo
+
+Withing this file add:
+
+[dockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+enabled=1
+gpgcheck=1
+gpgkey=https://yum.dockerproject.org/gpg
+
+--------------------------------------------------------------------------------
+Install Docker:
+yum install -y docker-engine
+
+systemctl enable docker
+systemctl start docker
+
+Check:
+docker --version
+
+Docker images:
+docker images
+
+--------------------------------------------------------------------------------
+Add user to docker group (do not user root for docker, have users for this):
+usermod -a -G docker user
+
+--------------------------------------------------------------------------------
+Containers have to run on a base image in order to have something to run on.
+
+Search for base images:
+docker search centos
+
+Make a copy of (sort of like a git clone):
+docker pull hello-world
+
+Run an image:
+docker run hello-world:latest
+docker run -it centos:latest /bin/bash                          (-it = interactively, current tty with bash shell)
+docker run -d nginx                                             (run as detached/daemon mode)
+docker run -d --name=MyWeb1 nginx                               (run with custom name)
+docker run -d --name=MyWeb1 nginx -P                            (run with custom name and redirect/bin container port to host between 32780 - 65000 range)
+docker run -d -p 8080:80 --name=MyWeb1 nginx                    (run with custom name and custom redirect/bind to container port 80 to host port 8080)
+docker run -d -p 8080:80 --name=MyWeb1 -v /mnt/data nginx       (run with custom name and custom redirect/bind to container port 80 to host port 8080 and make mount point from host to container available)
+docker run -d -p 8080:80 --name=MyWeb1 -v /home/user/www:/usr/share/nginx/html nginx       (run with custom name and custom redirect/bind to container port 80 to host port 8080 and mount path from host to container)
+
+Inspect an image:
+docker inspect nginx
+
+Stop:
+docker stop [container-name]
+
+Check the process list:
+docker ps
+docker ps -a                            (a list of all run containers)
+
+Additional stuff:
+docker attach MyWeb1                    (attach to container lifecycle, exiting kills)
+docker start MyWeb1                     (start a stopped container)
+docker restart MyWeb1                   (restart a stopped container)
+docker stop MyWeb1                      (stop a running container)
+docker exec -it MyWeb1 /bin/bash        (log into a running container with shell)
+
+docker rmi centos:centos6               (remove image)
+docker rm [ID]                          (remove container by ID)
+docker rm `docker ps -a -q`             (remove all the containers in the list by IDs)
+
+docker port MyWeb1 $CONTAINERPORT       (redirect/bind container port to host between 32780 - 65000 range)
+
+--------------------------------------------------------------------------------
+Dockerfile gives the possibility to build an image with multiple commands:
+
+Create a folder and place a file called: Dockerfile
+Tip: try to make long commands to save disk space.
+
+Contents:
+
+FROM debian:stable
+MAINTAINER username <mail@adres.com>
+
+RUN apt-get update && apt-get upgrade -y && apt-get install telnet
+
+ENV MYVALUE my-value
+
+EXPOSE 80
+EXPOSE 22
+
+CMD ["/usr/sbin/apache2ctl","-D","FOREGROUND"]
+
+When file is done you need to build it in current directory:
+docker build -t somename/apache .
+
+
+
+
+--------------------------------------------------------------------------------
