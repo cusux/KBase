@@ -1,0 +1,111 @@
+#### Subject:   Runnnig Docker
+#### Author:    Caseraw
+#### Date:      13-12-2016
+#### Remark:    Based on CentOS7
+
+Cheet sheets:
+https://github.com/wsargent/docker-cheat-sheet
+https://www.docker.com/sites/default/files/Docker_CheatSheet_08.09.2016_0.pdf
+
+--------------------------------------------------------------------------------
+Examples on running docker:
+Containers have to run on a base image in order to have something to run on.
+
+Search for base images (https://hub.docker.com):
+docker search centos
+
+Make a copy of (sort of like a git clone):
+docker pull hello-world
+docker pull ubuntu:xenial
+
+Run an image:
+docker run hello-world:latest
+docker run -it centos:latest /bin/bash                          (-it = interactively, current tty with bash shell)
+docker run -d nginx                                             (run as detached/daemon mode)
+docker run -itd ubuntu:xenial /bin/bash                          (-it = interactively, -d = detached/daemon mode, current tty with bash shell)
+docker run -d --name=MyWeb1 nginx                               (run with custom name)
+docker run -d --name=MyWeb1 nginx -P                            (run with custom name and redirect/bin container port to host between 32780 - 65000 range)
+docker run -d -p 8080:80 --name=MyWeb1 nginx                    (run with custom name and custom redirect/bind to container port 80 to host port 8080)
+docker run -d -p 8080:80 --name=MyWeb1 -v /mnt/data nginx       (run with custom name and custom redirect/bind to container port 80 to host port 8080 and make mount point from host to container available)
+docker run -d -p 8080:80 --name=MyWeb1 -v /home/user/www:/usr/share/nginx/html nginx       (run with custom name and custom redirect/bind to container port 80 to host port 8080 and mount path from host to container)
+
+Inspect an image:
+docker inspect nginx
+
+Stop:
+docker stop [container-name]
+
+Check the process list:
+docker ps
+docker ps -a                            (a list of all run containers)
+
+Additional stuff:
+docker attach MyWeb1                    (attach to container lifecycle, exiting kills)
+docker start MyWeb1                     (start a stopped container)
+docker restart MyWeb1                   (restart a stopped container)
+docker stop MyWeb1                      (stop a running container)
+docker exec -it MyWeb1 /bin/bash        (log into a running container with shell)
+
+docker rmi centos:centos6               (remove image)
+docker rm [ID]                          (remove container by ID)
+docker rm `docker ps -a -q`             (remove all the containers in the list by IDs)
+
+docker port MyWeb1 $CONTAINERPORT       (redirect/bind container port to host between 32780 - 65000 range)
+
+--------------------------------------------------------------------------------
+Packaging a customizes container: Build an image with a Dockerfile:
+
+First:    Create a dir and change to it.
+Second:   Create a Dockerfile and place at least the below contents, these are the base.
+
+Example 1:
+Contents:
+---
+
+# This is a custom ubuntu image with ssh already installed.
+# User caseraw is created
+FROM ubuntu:xenial
+MAINTAINER caseraw <kasra@caseraw.com>
+RUN apt-get update
+RUN apt-get install -y openssh-server
+
+
+Example 2:
+Contents:
+---
+
+FROM debian:stable
+MAINTAINER username <mail@adres.com>
+RUN apt-get update && apt-get upgrade -y && apt-get install telnet
+ENV MYVALUE my-value
+EXPOSE 80
+EXPOSE 22
+CMD ["/usr/sbin/apache2ctl","-D","FOREGROUND"]
+
+
+Start build examples:
+---
+
+Example 1:      docker build -t="cr/ubuntu-sshd:v1" .
+Example 2:      docker build -t somename/apache .
+
+--------------------------------------------------------------------------------
+Packaging a customizes container: Create image from existing container:
+
+First:    run a docker container and perform your actions in it.
+Second:   exit the container.
+Third:    commit the changes like:
+docker commit -m "Commit Message" -a "Maintainer user" existing_container_name_ID new_container_name_ID_tag
+docker commit -m "ubuntu/xenial update, caseraw user added, openssh installed" -a "caseraw" gloomy_engelbart cr/ubuntu:v1
+
+--------------------------------------------------------------------------------
+Run a command on a running docker container:
+
+Run a command from host to docker container:
+docker exec cocky_darwin /bin/cat /etc/profile
+docker exec [container-name] [command]
+
+Run a command as a daemon:
+docker run -d cr/ubuntu:v1 /bin/bash -c "while true;do echo HELLO;sleep 1;done"
+This will continue on until you stop the container.
+Check output with: docker logs [conatiner-name]
