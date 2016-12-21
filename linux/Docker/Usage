@@ -20,14 +20,14 @@ docker pull ubuntu:xenial
 
 Run an image:
 docker run hello-world:latest
-docker run -it centos:latest /bin/bash                          (-it = interactively, current tty with bash shell)
-docker run -d nginx                                             (run as detached/daemon mode)
-docker run -itd ubuntu:xenial /bin/bash                          (-it = interactively, -d = detached/daemon mode, current tty with bash shell)
-docker run -d --name=MyWeb1 nginx                               (run with custom name)
-docker run -d --name=MyWeb1 nginx -P                            (run with custom name and redirect/bin container port to host between 32780 - 65000 range)
-docker run -d -p 8080:80 --name=MyWeb1 nginx                    (run with custom name and custom redirect/bind to container port 80 to host port 8080)
-docker run -d -p 8080:80 --name=MyWeb1 -v /mnt/data nginx       (run with custom name and custom redirect/bind to container port 80 to host port 8080 and make mount point from host to container available)
-docker run -d -p 8080:80 --name=MyWeb1 -v /home/user/www:/usr/share/nginx/html nginx       (run with custom name and custom redirect/bind to container port 80 to host port 8080 and mount path from host to container)
+docker run -it centos:latest /bin/bash                                                  (-it = interactively, current tty with bash shell)
+docker run -d nginx                                                                     (run as detached/daemon mode)
+docker run -itd ubuntu:xenial /bin/bash                                                 (-it = interactively, -d = detached/daemon mode, current tty with bash shell)
+docker run -d --name=MyWeb1 nginx                                                       (run with custom name)
+docker run -d --name=MyWeb1 nginx -P                                                    (run with custom name and redirect/bin container port to host between 32780 - 65000 range)
+docker run -d -p 8080:80 --name=MyWeb1 nginx                                            (run with custom name and custom redirect/bind to container port 80 to host port 8080)
+docker run -d -p 8080:80 --name=MyWeb1 -v /mnt/data nginx                               (run with custom name and custom redirect/bind to container port 80 to host port 8080 and make mount point from host to container available)
+docker run -d -p 8080:80 --name=MyWeb1 -v /home/user/www:/usr/share/nginx/html nginx    (run with custom name and custom redirect/bind to container port 80 to host port 8080 and mount path from host to container)
 
 Inspect an image:
 docker inspect nginx
@@ -40,6 +40,7 @@ docker ps
 docker ps -a                            (a list of all run containers)
 
 Additional stuff:
+CTRL+q or CTRL+p                        (turn interactive mode to daemon mode)
 docker attach MyWeb1                    (attach to container lifecycle, exiting kills)
 docker start MyWeb1                     (start a stopped container)
 docker restart MyWeb1                   (restart a stopped container)
@@ -86,11 +87,11 @@ CMD ["/usr/sbin/apache2ctl","-D","FOREGROUND"]
 Start build examples:
 ---
 
-Example 1:      docker build -t="cr/ubuntu-sshd:v1" .
+Example 1:      docker build -t cr/ubuntu-sshd:v1 .
 Example 2:      docker build -t somename/apache .
 
 --------------------------------------------------------------------------------
-Packaging a customizes container: Create image from existing container:
+Packaging a customized container: Create image from existing container:
 
 First:    run a docker container and perform your actions in it.
 Second:   exit the container.
@@ -109,3 +110,10 @@ Run a command as a daemon:
 docker run -d cr/ubuntu:v1 /bin/bash -c "while true;do echo HELLO;sleep 1;done"
 This will continue on until you stop the container.
 Check output with: docker logs [conatiner-name]
+
+--------------------------------------------------------------------------------
+Working with ports:
+
+Expose a port from the host to the container:
+docker run -d -p 80:80 nginx:latest
+docker run -d -p 8080:80 nginx:latest

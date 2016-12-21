@@ -1,0 +1,28 @@
+# Dockerfile based on the latest CentOS 7 image
+FROM centos:latest
+MAINTAINER kasra@caseraw.com
+
+RUN yum update -y
+RUN yum install -y net-tools wget
+RUN cd ~ && wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.rpm"
+RUN yum localinstall -y ~/jdk-8u111-linux-x64.rpm
+
+RUN cd ~&& echo "export JAVA_HOME=/user/java/jdk1.8.0/jre" >> /home/user/.bashrc
+ENV JAVA_BIN /usr/java/jdk1.8.0/jre/bin
+
+CMD "echo" "This is a custom container message for our testicles"
+
+--------------------------------------------------------------------------------
+
+Build:
+It can be build via with:
+docker build -t centos7/java1.8:v1 .
+
+Run with:
+docker run -it centos7/java1.8:v1 /bin/bash
+
+Explenation:
+
+This will pull an image, with the specified parameters.
+Set an environment variable in 2 possible options.
+And it will echo out a message.

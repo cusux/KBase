@@ -1,0 +1,20 @@
+# Download/pull the specified image and it's layers
+FROM centos:latest
+
+# Username/mailadres to display when publishing the image
+MAINTAINER kasra@caseraw.com
+
+# Run a command, in this case; yum update -y
+RUN yum update -y
+
+# Perform a command, in this case an echo message
+CMD "echo" "This is a custom container message for our testicles"
+
+# Create an entrypoint command, in this case an echo message (will always do this)
+ENTRYPOINT echo "This command will display this message on EVERY container that is run from it"
+
+# Create a systemwide environent variable, in this case; JAVA_BIN /usr/java/jdk1.8.0/jre/bin
+ENV JAVA_BIN /usr/java/jdk1.8.0/jre/bin
+
+# Port forward/map with underlying host, in this case it's exposing port to container on port 80
+EXPOSE 80
