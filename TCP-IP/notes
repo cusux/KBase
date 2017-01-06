@@ -1,0 +1,110 @@
+#### Subject:   TCP IP
+#### Author:    Caseraw
+#### Date:      06-01-2017
+
+--------------------------------------------------------------------------------
+Abbreviations:
+TCP:        Transport Communications Protocol
+IP:         Internet Protocol
+IPS:        Internet Protocol Suite (equals TCP/IP)
+
+
+--------------------------------------------------------------------------------
+History:
+It all began in 1969 with ARPA (Advanced Research Projects Agency) with a project on an experimental packet-switching network (ARPAnet).
+In 1975 ARPAnet went from experimental to an operational network responsible for Defense Communications Agency (DCA).
+In 1983 TCP/IP protocols were adopted as Military Standards (MIL STD). DARPA funded Bolt, Beranek, and Newman (BBN) to implement TCP/IP in Berkeley (BSD) Unix. Thus began the marriage of Unix and TCP/IP.
+In 1983 the old ARPAnet was divided into MILNET (unclassified Defense Data Network, DDN) and a new smaller ARPAnet. “Internet” was used to refer to the entire network: MILNET plus ARPAnet.
+In 1985 the National Science Foundation (NSF) created NSFNet and connected it to the then-existing Internet. It linked together five supercomputer centers, smaller than ARPAnet with 56Kbps.
+In 1987 the NSF created a new, faster backbone and a three-tiered network topology that included the backbone, regional networks, and local networks.
+In 1990 the ARPAnet formally passed out of existence.
+In 1995 the NSFNet ceased its role as a primary Internet backbone network.
+Today the Internet has expanded worldwide and no longer depended on a core backbone or governmental support. It is build by commercial providers, national network providers (tier-one),  regional providers that create the infrastructure ad Internet Service Providers (ISP) that provide local access and user services.T his network of networks is linked together in the United States at several major interconnection points called Network Access Points (NAPs).
+
+Little fact:
+An internet (lowercase “i”) is any collection of separate physical networks, interconnected by a common protocol, to form a single logical network.
+The Internet (uppercase “I”) is the worldwide collection of interconnected networks, which grew out of the original ARPAnet, that uses IP to link the various physical networks into a single logical network.
+
+TCP/IP features:
+- Open protocol standards.
+- Independence from any specific physical network hardware.
+- A common addressing scheme that allows any device to connect to any network.
+- Standardized high-level protocols for consistence, widely available user services.
+
+Protocols:
+The open nature of TCP/IP protocols requires an open standards development process and publicly available standards documents. Internet standards are developed by the Internet Engineering Task Force (IETF) in open, public meetings. Protocols developed in this process are published as Requests for Comments (RFCs). There are 3 basic types: standards (STD), best current practices (BCP), and informational (FYI).
+
+Standards track RFCs maturity levels:
+- Proposed standard.
+    This is a protocol specification that is important enough and has received enough Internet community support to be considered for a standard. The specification is stable and well understood, but it is not yet a standard and may be withdrawn from consideration to be a standard.
+- Draft standard.
+    This is a protocol specification for which at least two independent, interoperable implementations exist. A draft standard is a final specification undergoing widespread testing. It will change only if the testing forces a change.
+- Internet standard.
+    A specification is declared a standard only after extensive testing and only if the protocol defined in the specification is considered to be of significant benefit to the Internet community.
+
+Categories of standards:
+- Technical Specification (TS) defines a protocol.
+- Applicability Statement (AS) defines when the protocol is to be used.
+
+Requirement levels:
+- Required.
+    This standard protocol is a required part of every TCP/IP implementation. It must be included for the TCP/IP stack to be compliant.
+- Recommended.
+    This standard protocol should be included in every TCP/IP implementation, although it is not required for minimal compliance.
+- Elective.
+    This standard is optional. It is up to the software vendor to implement it or not.
+
+Other levels (apply to RFCs that are not part of the standards track):
+- Limited use.
+- Not recommended.
+
+Types of non-standard track RFCs:
+- Experimental.
+    An experimental RFC is limited to use in research and development.
+- Historic.
+    A historic RFC is outdated and no longer recommended for use.
+- Informational.
+    An informational RFC provides information of general interest to the Internet community; it does not define an Internet standard protocol.
+
+Other group of RFCs:
+- Best Current Practices (BCP).
+    Examples: RFC 2026 and RFC 1918
+
+Architectural model developed by the International Standards Organization (OSI model, stack, protocol stack):
+Each layer of the OSI model represents a function performed when data is transferred between cooperating applications across an intervening network.
+- 7 - Application layer:
+    Consists of application programs that use the network.
+        The Application Layer is the level of the protocol hierarchy where user-accessed network processes reside. In this text, a TCP/IP application is any network process that occurs above the Transport Layer. This includes all of the processes that users directly interact with as well as other processes at this level that users are not necessarily aware of.
+- 6 - Presentation layer:
+    Standardizes data presentation to the applications.
+        For cooperating applications to exchange data, they must agree about how data is represented. In OSI, the Presentation Layer provides standard data presentation routines. This function is frequently handled within the applications in TCP/IP, though TCP/IP protocols such as XDR and MIME also perform this function.
+- 5 - Session layer:
+    Manages sessions between applications.
+        As with the Presentation Layer, the Session Layer is not identifiable as a separate layer in the TCP/IP protocol hierarchy. The OSI Session Layer manages the sessions (connections) between cooperating applications. In TCP/IP, this function largely occurs in the Transport Layer, and the term “session” is not used; instead, the terms “socket” and “port” are used to describe the path over which cooperating applications communicate.
+- 4 - Transport layer:
+    Provides end-to-end error detection and correction.
+        Much of our discussion of TCP/IP is directed to the protocols that occur in the Transport Layer. The Transport Layer in the OSI reference model guarantees that the receiver gets the data exactly as it was sent. In TCP/IP, this function is performed by the Transmission Control Protocol (TCP). However, TCP/IP offers a second Transport Layer service, User Datagram Protocol (UDP), that does not perform the end-to-end reliability checks.
+- 3 - Network layer:
+    Manages connections across the network for the upper layers.
+        The Network Layer manages connections across the network and isolates the upper layer protocols from the details of the underlying network. The Internet Protocol (IP), which isolates the upper layers from the underlying network and handles the addressing and delivery of data, is usually described as TCP/IP’s Network Layer.
+- 2 - Data link layer
+    Provides reliable data delivery across the physical link.
+        The reliable delivery of data across the underlying physical network is handled by the Data Link Layer. TCP/IP rarely creates protocols in the Data Link Layer. Most RFCs that relate to the Data Link Layer discuss how IP can make use of existing data link protocols.
+- 1 - Physical layer:
+    Defines the physical characteristics of the network media.
+        The Physical Layer defines the characteristics of the hardware needed to carry the data transmission signal. Features such as voltage levels and the number and location of interface pins are defined in this layer. Examples of standards at the Physical Layer are interface connectors such as RS232C and V.35, and standards for local area network wiring such as IEEE 802.3. TCP/IP does not define physical standards—it makes use of existing standards.
+
+The four-level model layered TCP/IP:
+- 4 - Application layer:
+    Consists of applications and processes that use the network.
+- 3 - Host-to-host transport layer:
+    Provides end-to-end data delivery services.
+- 2 - Internet layer:
+    Defines the datagram and handles the routing of data.
+- 1 - Network access layer:
+    Consist of routines for accessing physical networks.
+
+
+
+--------------------------------------------------------------------------------
+Progress... halt at page 12 of book - Internet Layer
