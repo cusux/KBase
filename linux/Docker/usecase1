@@ -1,0 +1,102 @@
+## Creating a webfarm usecase
+
+
+To start of create a base image to work from:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+docker pull centos:centos6
+docker run -i -t centos:centos6 /bin/bash
+
+Go ahead within the container:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+yum install wget -y
+wget https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -Uvh epel-release-6-8.noarch.rpm
+yum update -y
+yum install -y which sudo openssh-server httpd sshd php git
+rm -rf epel-release-6-8.noarch.rpm
+yum clean all
+cd
+vi .bashrc
+    add these lines on the bottom of the file:
+    /sbin/service httpd start
+    /sbin/service sshd start
+exit
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Commit the changes to a specified base image:
+docker commit 9f0f9af07f64 centos6:baseweb
+
+Test:
+docker run -it centos6:baseweb /bin/bash
+docker run  --name=webtest -i -t -p 80:80 centos6:baseweb /bin/bash
+
+With host mount as volume:
+docker run  --name=webtest -v /Users/caseraw/Projects/DockerProjects/webfarm/dockerwww:/var/www/html -i -t -p 80:80 centos6:baseweb /bin/bash
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Create a new base:
+docker commit webtest centos6:serverv1
+
+Test:
+docker run  --name=webtest -v /Users/caseraw/Projects/DockerProjects/webfarm/dockerwww:/var/www/html -i -t -p 80:80 centos6:serverv1 /bin/bash
+
+Additional info:
+Download some html template from: http://www.oswd.org/
+Put this in: /Users/caseraw/Projects/DockerProjects/webfarm/dockerwww
+This will be used to server a test from.
+
+Create user in order to be able to access the container via SSH:
+adduser caseraw
+passwd caseraw
+set password
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Create a final base:
+docker commit webtest centos6:finalwebv1
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Make git repo:
+
+Create a git repo from: /Users/caseraw/Projects/DockerProjects/webfarm/dockerwww
+Rename it to: /Users/caseraw/Projects/DockerProjects/webfarm/dockergit
+
+Make a clone:
+git clone /Users/caseraw/Projects/DockerProjects/webfarm/dockergit dockerwww
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Create devweb1 container:
+docker run -dit --name=devweb1 -p 8081:80 -v /Users/caseraw/Projects/DockerProjects/webfarm/dockerwww:/var/www/html centos6:finalwebv1 /bin/bash
+
+Create devweb2 container:
+docker run -dit --name=devweb2 -p 8082:80 -v /Users/caseraw/Projects/DockerProjects/webfarm/dockerwww:/var/www/html centos6:finalwebv1 /bin/bash
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Create proxy and loadbalancer:
+
+On MacOS you need to install nginx with brew:
+brew update && brew upgrade && brew install nginx
+
+Nginx will be located at: /usr/local/etc/nginx
+Logs are at: /usr/local/var/log/nginx/access.log and error.log
+Sites are placed in: /usr/local/etc/nginx/servers
+
+Create a default.conf in the servers folder with the following example on 2 docker containers.
+
+upstream dockerapp {
+        server 127.0.0.1:8081;
+        server 127.0.0.1:8082;
+}
+
+server {
+        listen *:80;
+
+        server_name 127.0.0.1;
+        index index.html index.htm index.php;
+
+        access_log /usr/local/var/log/nginx/access.log;
+        error_log /usr/local/var/log/nginx/error.log;
+
+        location / {
+                proxy_pass http://dockerapp;
+        }
+}

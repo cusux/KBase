@@ -1,3 +1,5 @@
+https://docs.docker.com/engine/reference/builder/
+
 # Download/pull the specified image and it's layers
 FROM centos:latest
 
@@ -18,3 +20,6 @@ ENV JAVA_BIN /usr/java/jdk1.8.0/jre/bin
 
 # Port forward/map with underlying host, in this case it's exposing port to container on port 80
 EXPOSE 80
+
+# Create a mount/volume:
+VOLUME /myvol

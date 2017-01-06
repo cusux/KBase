@@ -18,7 +18,7 @@ Make a copy of (sort of like a git clone):
 docker pull hello-world
 docker pull ubuntu:xenial
 
-Run an image:
+Run a container:
 docker run hello-world:latest
 docker run -it centos:latest /bin/bash                                                  (-it = interactively, current tty with bash shell)
 docker run -d nginx                                                                     (run as detached/daemon mode)
@@ -28,6 +28,7 @@ docker run -d --name=MyWeb1 nginx -P                                            
 docker run -d -p 8080:80 --name=MyWeb1 nginx                                            (run with custom name and custom redirect/bind to container port 80 to host port 8080)
 docker run -d -p 8080:80 --name=MyWeb1 -v /mnt/data nginx                               (run with custom name and custom redirect/bind to container port 80 to host port 8080 and make mount point from host to container available)
 docker run -d -p 8080:80 --name=MyWeb1 -v /home/user/www:/usr/share/nginx/html nginx    (run with custom name and custom redirect/bind to container port 80 to host port 8080 and mount path from host to container)
+docker run -it --dns=8.8.8.8 --dns-search="mydomain.local" --name="mycontainer3" -v /local_vol -v /home/tcox/docker/mydata:/remote_vol docker.io/ubuntu:latest /bin/bash
 
 Inspect an image:
 docker inspect nginx
@@ -117,3 +118,141 @@ Working with ports:
 Expose a port from the host to the container:
 docker run -d -p 80:80 nginx:latest
 docker run -d -p 8080:80 nginx:latest
+
+If ports are exposed in the dockerfile, then the flag -P can be given when running a container.
+
+--------------------------------------------------------------------------------
+Working with volumes:
+
+Create a default mount in the container on host:
+docker run -it --name voltest1 -v /mydata centos:latest /bin/bash
+This will create a mount in container that is reached through the docker volumes directory with container ID.
+
+Create a custom mount in the container on host with specified path:
+docker run -it --name voltest2 -v /home/testuser/test:/mydata centos:latest /bin/bash
+
+The mountpoint can be inspected with the inspect directive.
+Mounting within the dockerfile is only possible as a default mapping.
+
+--------------------------------------------------------------------------------
+Working with network:
+
+List docker network items with:
+docker network ls
+docker network ls --no-trunc
+
+Inspect host network:
+docker network inspect host
+
+--------------------------------------------------------------------------------
+Creating a network:
+
+Manual pages can be summoned by:
+man docker-network-create
+
+Create a simple network:
+docker network create --subnet 10.1.0.0/24 --gateway 10.1.0.1 mybridge01
+
+Inspect network:
+docker network inspect mybridge01
+
+Create a more complex network:
+docker network create --subnet 10.1.0.0/16 --gateway 10.1.0.1 --ip-range=10.1.4.0/24 --driver=bridge --label=myhost4network bridge04
+
+Running container for that network:
+docker run -it --name nettest1 --net bridge04 centos:latest /bin/bash
+
+Running container for that network with static IP:
+docker run -it --name nettest2 --net bridge04 --ip 10.1.4.100 centos:latest /bin/bash
+
+--------------------------------------------------------------------------------
+Check container processes:
+
+Check running processes in container:
+docker top jovial_perlman
+
+Start another bash proces to go into the container:
+docker exec -i -t jovial_perlman /bin/bash
+
+--------------------------------------------------------------------------------
+Check container statistics:
+
+See a continouous feed of statistics:
+docker stats jovial_perlman
+
+--------------------------------------------------------------------------------
+Listing containers:
+
+List docker container id's:
+docker ps -a -q
+
+List docker image id's:
+docker images -q
+
+--------------------------------------------------------------------------------
+Removing containers:
+
+Removing a list of id's:
+docker rm `docker ps -a -q`
+docker rmi `docker images -q`
+
+--------------------------------------------------------------------------------
+Container names:
+
+Renaming a container:
+docker rename [container_ID] [new_container_NAME]
+docker rename [container_NAME] [new_container_NAME]
+
+--------------------------------------------------------------------------------
+Docker events:
+
+See event stream:
+docker events
+
+Filter:
+docker events --filter event=attach --filter event=start --filter event=stop
+
+--------------------------------------------------------------------------------
+Saving and loading images:
+
+Commiting a container:
+docker commit [container_ID] [repository:tag]
+
+Saving a container:
+docker save -o repository.tag.tar repository:tag
+docker save -output centos.latest.tar centos:latest
+
+Loading a container:
+docker load --input centos.latest.tar
+docker load --input centos.latest.tar.gz
+
+--------------------------------------------------------------------------------
+Checking image history:
+
+docker history repository:tag
+docker history repository:tag --no-trunc
+docker history centos:latest --quiet
+docker history centos:latest --no-trunc --quiet
+
+--------------------------------------------------------------------------------
+Image referencing:
+
+Create a reference from image base:
+docker tag 67591570dd29 mine/nginx:v10
+docker tag mine/nginx:v10 caseraw.nginx.dev
+
+--------------------------------------------------------------------------------
+Logging in to GitHub:
+
+Login to GitHub account and provide credentials:
+docker login
+docker login --username=caseraw
+
+Logout:
+docker logout
+
+Tage the name of image you want to push:
+docker tag caseraw.nginx.dev caseraw/latest
+
+Push to docker:
+docker push caseraw/latest
