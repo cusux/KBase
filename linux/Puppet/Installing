@@ -1,0 +1,62 @@
+#### Subject:   Installing Puppet
+#### Author:    Caseraw
+#### Date:      12-01-2016
+
+--------------------------------------------------------------------------------
+Notes:
+
+Servers user:
+caseraw1.mylabserver.com
+caseraw2.mylabserver.com
+caseraw3.mylabserver.com
+
+--------------------------------------------------------------------------------
+Additional Linux academy notes:
+Make sure the machines have the public DNS set in the /etc/hosts file, example:
+
+127.0.0.1   caseraw1.mylabserver.com localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+--------------------------------------------------------------------------------
+Download puppet and run the installer:
+./puppet-enterprise-installer
+
+- Choose the guided install, option 1.
+- Wait for installation process.
+- In the terminal you will be prompted to go to open a browser for the Puppet master: https://caseraw1.mylabserver.com:3000
+- Click on "Let's get started" button and choose for monolithic.
+- Choose:
+    - Install on this server.
+    - Fill in FQDN: caseraw1.mylabserver.com
+    - Have Enable Application Orchestration enabled.
+    - Install PostgreSQL on the PuppetDB.
+    - Choose a Puppet Enterprise Console password.
+    - Submit the form and click on "Deploy now".
+    - Wait for installation.
+- After install finished you may login to the puppet master web interface.
+
+--------------------------------------------------------------------------------
+Install puppet agent on nodes:
+
+Easy install is done by pasting a command like below found on the puppet master web interface under the Unsigned Certificates:
+curl -k https://caseraw1.mylabserver.com:8140/packages/current/install.bash | sudo bash
+
+Run this on each node you require.
+After installation you need to accept the nodes by signing the certificates, this can be done in 2 ways:
+- Via the puppet master web interface under Unsigned Certificates.
+- Via the command line on the puppet master host.
+    - puppet cert list
+    - puppet cert sign <name of node>
+    - puppet cert sign --all
+
+Example:
+[root@caseraw1 ~]# puppet cert list
+  "caseraw2.mylabserver.com" (SHA256) 5D:4E:5C:FA:9F:0A:64:98:08:CC:86:DA:76:11:2A:A7:73:DF:2C:F1:10:D8:DE:8C:88:58:A0:3B:5B:AA:18:E7
+  "caseraw3.mylabserver.com" (SHA256) DA:F2:0B:01:C7:86:B9:E2:14:4E:1C:A8:D6:01:94:37:CD:3C:67:ED:8B:89:3C:E7:5D:46:3C:32:2B:C5:A0:57
+[root@caseraw1 ~]# puppet cert sign --all
+Notice: Signed certificate request for caseraw2.mylabserver.com
+Notice: Removing file Puppet::SSL::CertificateRequest caseraw2.mylabserver.com at '/etc/puppetlabs/puppet/ssl/ca/requests/caseraw2.mylabserver.com.pem'
+Notice: Signed certificate request for caseraw3.mylabserver.com
+Notice: Removing file Puppet::SSL::CertificateRequest caseraw3.mylabserver.com at '/etc/puppetlabs/puppet/ssl/ca/requests/caseraw3.mylabserver.com.pem'
+
+--------------------------------------------------------------------------------

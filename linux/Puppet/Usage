@@ -1,0 +1,137 @@
+#### Subject:   Using Puppet
+#### Author:    Caseraw
+#### Date:      12-01-2016
+
+--------------------------------------------------------------------------------
+Manifests are found in:
+/etc/puppetlabs/code/environments/production/manifests
+
+In this example we will create a user on all nodes.
+Writing a simple manifest:
+
+node default {
+  # Set test user/pass is on all nodes
+  user { 'test_user':
+    name        =>	'testuser' ,
+    groups      =>	'wheel',
+    managehome  =>	true,
+    password    =>	'$1$XKc9oMLf$s71JfP3UD0XNAdQKbQHgS0',
+    ensure      =>	present
+  }
+}
+
+Checking the syntax with the puppet parser:
+puppet parser validate site.pp
+
+Apply the changes (simulate):
+puppet apply --noop site.pp
+
+Apply the changes:
+puppet apply site.pp
+
+--------------------------------------------------------------------------------
+Modules are found in:
+/etc/puppetlabs/code/environments/production/modules
+
+In this example we will create a custom message of the day.
+In the modules dir, create the following dirs.
+└── motd
+    ├── examples
+    ├── facts.d         (for using external facts)
+    ├── files           (for using files)
+    ├── lib             (for using facts)
+    ├── manifests
+    ├── spec
+    └── templates       (for using templates)
+
+Docs:
+https://docs.puppet.com/puppet/4.8/lang_resources.html
+https://docs.puppet.com/puppet/4.8/type.html#file
+
+Create a motd module in: /etc/puppetlabs/code/environments/production/modules/motd/manifests
+Filename: init.pp
+
+Example:
+class motd {
+  file { '/etc/motd':
+    ensure      =>      file,
+    source      =>      'puppet:///modules/motd/motd',
+  }
+}
+
+Now also create the file motd file:
+/etc/puppetlabs/code/environments/production/modules/motd/files/motd
+
+If needed use a generator like: http://patorjk.com/software/taag
+
+Validate the syntax:
+puppet parser validate manifests/init.pp
+
+Include motd module in the site wide .pp:
+/etc/puppetlabs/code/environments/production/manifests/site.pp
+
+Validate the syntax:
+puppet perser validate /etc/puppetlabs/code/environments/production/manifests/site.pp
+
+Apply catalog:
+puppet apply --noop /etc/puppetlabs/code/environments/production/manifests/site.pp
+puppet apply /etc/puppetlabs/code/environments/production/manifests/site.pp
+
+
+--------------------------------------------------------------------------------
+Facts can be found on each hosts:
+facter
+
+Docs:
+https://docs.puppet.com/puppet/latest/lang_facts_and_builtin_vars.html
+
+To use facts, variables and control statements we continue on the motd module example:
+class motd {
+
+  $hostname     = $facts['networking']['fqdn']
+  $os_name      = $facts['os']['name']
+  $os_release   = $facts['os']['release']
+
+  if $hostname == 'caseraw1.mylabserver.com' {
+    File { '/etc/motd':
+      path      =>      '/etc/motd',
+      ensure    =>      file,
+      content   =>      "\n\n[Puppet Master] ${hostname} ${os_name} ${os_release}\n\n",
+    }
+  }
+  elsif $facts['networking']['domain'] == 'mylabserver.com' {
+    File { '/etc/motd':
+      path      =>      '/etc/motd',
+      ensure    =>      file,
+      content   =>      "\n\n[Puppet Master] ${hostname} ${os_name} ${os_release}\n\n",
+    }
+  }
+}
+
+Validate this and the site wide .pp file.
+Apply this as catalog.
+
+--------------------------------------------------------------------------------
+Overview of puppet code dir: /etc/puppetlabs/code
+
+├── environments
+│   └── production
+│       ├── environment.conf
+│       ├── hieradata
+│       ├── manifests
+│       │   └── site.pp
+│       └── modules
+│           └── motd
+│               ├── examples
+│               ├── facts.d
+│               ├── files
+│               │   └── motd
+│               ├── lib
+│               ├── manifests
+│               │   └── init.pp
+│               ├── spec
+│               └── templates
+└── modules
+
+
+--------------------------------------------------------------------------------

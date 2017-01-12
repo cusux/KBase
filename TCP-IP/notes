@@ -8,7 +8,6 @@ TCP:        Transport Communications Protocol
 IP:         Internet Protocol
 IPS:        Internet Protocol Suite (equals TCP/IP)
 
-
 --------------------------------------------------------------------------------
 History:
 It all began in 1969 with ARPA (Advanced Research Projects Agency) with a project on an experimental packet-switching network (ARPAnet).
@@ -104,7 +103,15 @@ The four-level model layered TCP/IP:
 - 1 - Network access layer:
     Consist of routines for accessing physical networks.
 
-
+Internet Control Message Protocol (ICMP) defined in RFC 792 (part of the Internet Layer, uses the IP datagram delivery facility to send its messages):
+- Flow control:
+    When datagrams arrive too fast for processing, the destination host or an inter- mediate gateway sends an ICMP Source Quench Message back to the sender. This tells the source to stop sending datagrams temporarily.
+- Detecting unreachable destinations:
+    When a destination is unreachable, the system detecting the problem sends a Destination Unreachable Message to the datagram’s source. If the unreachable destination is a network or host, the message is sent by an intermediate gateway. But if the destination is an unreachable port, the destination host sends the message.
+- Redirecting routes:
+    A gateway sends the ICMP Redirect Message to tell a host to use another gateway, presumably because the other gateway is a better choice. This message can be used only when the source host is on the same network as both gateways.
+- Checking remote hosts:
+    A host can send the ICMP Echo Message to see if a remote system’s Internet Protocol is up and operational. When a system receives an echo message, it replies and sends the data from the packet back to the source host. The ping command uses this message.
 
 --------------------------------------------------------------------------------
-Progress... halt at page 12 of book - Internet Layer
+Subnets ... page 28.
