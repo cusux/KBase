@@ -1,0 +1,209 @@
+#### Subject:   Using Puppet
+#### Author:    Caseraw
+#### Date:      17-01-2016
+
+--------------------------------------------------------------------------------
+Ansible commands:
+
+# List all hosts:
+ansible all --list-hosts
+
+# Run ping module on all host groups:
+ansible all -m ping
+
+# Run list command:
+ansible all -a "ls -la /home/ansible"
+
+# Run cat command for which elevated rights are required:
+ansible all -s -a "cat /var/log/messages"
+
+# Copy file from localhost to other hosts in "centos" host group:
+ansible centos -m copy -a "src=test.txt dest=/tmp/test.txt"
+
+# Install package on ubuntu host group using apt module:
+ansible ubuntu -s -m apt -a "name=elinks state=latest"
+
+# Install package on centos host group using yum module:
+ansible ubuntu -s -m yum -a "name=httpd state=latest"
+
+# Uninstall package on Ubuntu host group using apt module:
+ansible ubuntu -s -m apt -a "name=elinks state=absent"
+
+# Add user on centos host group:
+ansible centos -s -m user -a "name=test"
+
+# Remove user on centos host group:
+ansible centos -s -m user -a "name=test state=absent"
+
+--------------------------------------------------------------------------------
+Ansible playbook:
+
+# Playbook example, create a file and place below contents:
+--- # This is comment YAML example to install HTTPD on CENTOS
+- hosts: centos
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: yes
+  vars:
+    username: myuser
+  tasks:
+  - name: Install HTTPD server on CentOS7 Nodes
+    yum:
+      name: httpd
+      state: latest
+    notify:
+    - startservice
+  handlers:
+  - name: startservice
+    service:
+      name: httpd
+      state: restarted
+
+# Run the playbook:
+ansible-playbook install_httpd.yaml
+
+--------------------------------------------------------------------------------
+Gathering facts:
+
+# Ask host group for all facts:
+ansible centos -m setup
+
+# Ask host group for filtered facts:
+ansible centos -m setup -a "filter=*ipv4*"
+ansible centos -m setup -a "filter=ansible_domain"
+
+# Ask host group for all facts and save the JSON tree in a facts directory:
+ansible centos -m setup --tree facts
+
+--------------------------------------------------------------------------------
+Variable substitution:
+
+Create a file to use as playbook an place below contents:
+--- # Testing variables of a playbook
+- hosts: '{{ myhosts }}'
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: '{{ gather }}'
+  vars:
+    myhosts: centos
+    gather: yes
+    pkg: telnet
+  tasks:
+  - name: Install indicated software
+    yum:
+      name: '{{ pkg }}'
+      state: latest
+
+# Run playbook:
+ansible-playbook vartest.yaml
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Variables given in command line:
+
+Create a file to use as playbook an place below contents:
+--- # Testing variables of a playbook
+- hosts: '{{ myhosts }}'
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: '{{ gather }}'
+  tasks:
+  - name: Install indicated software
+    yum:
+      name: '{{ pkg }}'
+      state: latest
+
+# Run playbook with variable parameters:
+ansible-playbook vartest.yaml --extra-vars "myhosts=centos gather=yes pkg=telnet"
+
+# Undo this install:
+ansible centos -s -m yum -a "name=telnet state=absent"
+
+--------------------------------------------------------------------------------
+Debugging statements:
+
+Inside the playbook you can add, register and debug in order to catch more info on the run:
+
+--- # Installing Telnet
+- hosts: centos
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: Install Telnet package
+    yum:
+      name: telnet
+      state: latest
+    register: result
+  - debug: var=result
+
+
+--------------------------------------------------------------------------------
+Notification and handlers:
+
+This playbook below will only enable ad restart NGINX when NGINX does not exists and has to be installed.
+This is caught by the notify and handler.
+
+--- # Installing NGINX
+- hosts: centos
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: yes
+  tasks:
+  - name: Install NGINX package
+    yum:
+      name: telnet
+      state: latest
+    notify:
+    - Enable and start the NGINX service
+  handlers:
+  - name: Enable and start the NGINX service
+    service:
+      name: nginx
+      enabled: yes
+      state: restarted
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------

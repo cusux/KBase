@@ -5,17 +5,24 @@
 --------------------------------------------------------------------------------
 Notes:
 
-Servers user:
-caseraw1.mylabserver.com
-caseraw2.mylabserver.com
-caseraw3.mylabserver.com
+Servers used in this example:
+caseraw1.mylabserver.com        Puppet master
+caseraw2.mylabserver.com        Node
+caseraw3.mylabserver.com        Node
+
+Additional notes:
+Make sure the puppet master has the hostname set in the /etc/hosts file, example:
+127.0.0.1   caseraw1.mylabserver.com
 
 --------------------------------------------------------------------------------
-Additional Linux academy notes:
-Make sure the machines have the public DNS set in the /etc/hosts file, example:
+Ports. Make sure the following ports are serviceable and not blocked by a firewall:
 
-127.0.0.1   caseraw1.mylabserver.com localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+Port:       Description:
+3000        Web-based puppet master installer
+8140        Puppet requests
+61613       Orchestration requests, mcollective
+443         Accessing enterprise console
+5432        Only of you use an external DB server (postgreSQL)
 
 --------------------------------------------------------------------------------
 Download puppet and run the installer:
@@ -34,6 +41,14 @@ Download puppet and run the installer:
     - Submit the form and click on "Deploy now".
     - Wait for installation.
 - After install finished you may login to the puppet master web interface.
+
+--------------------------------------------------------------------------------
+Guided install with an answers file:
+Create a file like: answers-file-name
+
+Run the command wit flag:
+./puppet-enterprise-installer -a answers-file-name      # It quits only with an error if an answer is missing.
+./puppet-enterprise-installer -A answers-file-name      # It prompts only with if an answer is missing.
 
 --------------------------------------------------------------------------------
 Install puppet agent on nodes:

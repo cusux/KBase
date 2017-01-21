@@ -1,0 +1,107 @@
+#### Subject:   Installing Ansible
+#### Author:    Caseraw
+#### Date:      17-01-2016
+
+--------------------------------------------------------------------------------
+Notes:
+
+Servers used in this example:
+caseraw1.mylabserver.com        Ansible Control Master (CentOS7)
+caseraw2.mylabserver.com        Node
+caseraw3.mylabserver.com        Node
+
+--------------------------------------------------------------------------------
+Installing:
+
+yum install epel-release
+yum update
+yum install git python python-devel python-pip openssl ansible
+
+--------------------------------------------------------------------------------
+Edit: /etc/ansible/ansible.cfg
+Uncomment:
+inventory      = /etc/ansible/hosts
+sudo_user      = root
+
+--------------------------------------------------------------------------------
+Create hosts file: /etc/ansible/hosts
+Backup existing default first: mv /etc/ansible/hosts /etc/ansible/hosts.original
+
+Contents:
+
+[local]
+localhost
+
+[centos]
+caseraw2.mylabserver.com
+caseraw3.mylabserver.com
+
+--------------------------------------------------------------------------------
+Add ansible user on all machines:
+
+adduser ansible
+passwd ansible
+
+Add sudo rights, edit: /etc/sudoers
+ansible ALL=(ALL)       NOPASSWD: ALL
+
+--------------------------------------------------------------------------------
+Create SSH key for ansible user:
+
+ssh-keygen (choose all defaults)
+
+ssh-copy-id localhost
+ssh-copy-id ansible@caseraw2.mylabserver.com
+ssh-copy-id ansible@caseraw3.mylabserver.com
+
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
