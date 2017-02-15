@@ -14,7 +14,7 @@ docker build -t centos7/nonroot:v1 .
 Run with:
 docker run -it centos7/nonroot:v1 /bin/bash
 
-Explenation:
+Explanation:
 
 This will pull an image, with the specified parameters.
 This will create a user called "user".
@@ -24,8 +24,8 @@ Exiting will stop the container.
 Logging in with root can be done by executing the following command on a running container:
 docker exec -u 0 -it small_lamarr /bin/bash
 
-This command will log in as root in order to make changes on the running conatiner.
-Exiting will not stop the container, because it has a running bash proces from "user".
+This command will log in as root in order to make changes on the running container.
+Exiting will not stop the container, because it has a running bash process from "user".
 
 Notes:
 Keep in mind that running the specific commands follow a specific priority.

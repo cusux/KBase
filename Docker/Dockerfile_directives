@@ -1,4 +1,5 @@
 https://docs.docker.com/engine/reference/builder/
+--------------------------------------------------------------------------------
 
 # Download/pull the specified image and it's layers
 FROM centos:latest

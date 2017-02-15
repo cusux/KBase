@@ -1,0 +1,40 @@
+#### Subject:   Installing Vagrant
+#### Author:    Caseraw
+#### Date:      12-01-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+Vagrantfile example; multiple boxes.
+
+Vagrant.configure(2) do |config|
+
+    config.vm.define "web", primary: true do |web|
+        web.vm.box = "centos/7"
+        web.vm.hostname = "webtest.caseraw.com"
+        web.vm.network "private_network", type: "dhcp"
+        web.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true,
+            rsync__exclude: [".git/", ".idea/"]
+        web.vm.provider "virtualbox" do |vbox|
+            vbox.name = "Web-Node"
+            vbox.memory = 4096
+            vbox.cpus = 2
+        end
+    end
+
+    config.vm.define "db" do |db|
+        db.vm.box = "centos/7"
+        db.vm.hostname = "dbtest.caseraw.com"
+        db.vm.network "private_network", type: "dhcp"
+        web.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true,
+            rsync__exclude: [".git/", ".idea/"]
+        db.vm.provider "virtualbox" do |vbox|
+            vbox.name = "DB-Node"
+            vbox.memory = 4096
+            vbox.cpus = 2
+        end
+    end
+
+end
+
+
+--------------------------------------------------------------------------------

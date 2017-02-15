@@ -1,0 +1,240 @@
+#### Subject:   Installing Vagrant
+#### Author:    Caseraw
+#### Date:      11-01-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+Vagrant Commands:
+
+vagrant init
+vagrant init -m centos/7
+
+vagrant up
+vagrant up --debug
+vagrant halt
+vagrant suspend
+vagrant resume
+vagrant reload
+
+vagrant ssh
+vagrant ssh-config
+vagrant destroy
+vagrant destroy -f && vagrant up
+
+vagrant status
+vagrant global-status
+vagrant global-status --prune
+
+vagrant box list
+vagrant box add <new-box-name> <new-box-name-path>.box
+vagrant box remove <box-name>
+vagrant package --output <new-box-name>.box
+vagrant box repackage <new-box-name>.box
+
+--------------------------------------------------------------------------------
+Base Vagrantfile:
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+end
+
+--------------------------------------------------------------------------------
+Network:
+
+- Port forwarding between Host and Guest:
+    config.vm.network :forwarded_port, guest: 22, host: 2222, host_ip: "127.0.0.1"
+    config.vm.network :forwarded_port, guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+    - Possible options:
+        - guest
+        - guest_ip
+        - host
+        - host_ip
+        - protocol
+
+    - Avoid port conflicts with:
+        auto_correct: true
+
+- Set Guest IP address:   (only private IP ranges allowed: https://nl.wikipedia.org/wiki/RFC_1918)
+    - Manual:
+        config.vm.network "private_network", ip: "192.168.50.4"
+    - Custom networks as "vboxnet" won't be removed during regular lifecycle, you will need to run as example:
+        VBoxManage hostonlyif remove vboxnet0
+
+    - DHCP:
+        config.vm.network "private_network", type: "dhcp"
+    - List DHCP servers, run:
+        VBoxManage list dhcpservers
+    - Networks as "vboxnet" won't be removed during regular lifecycle, you will need to run as example:
+         VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0
+
+- Using public network:
+    config.vm.network "public_network"
+    - You can use a bridge:
+        config.vm.network "public_network", bridge: 'en1: Wi-Fi (AirPort)'
+    - You can use an IP:
+        config.vm.network "public_network", ip: "192.168.0.17"
+
+--------------------------------------------------------------------------------
+Provisioners:
+
+vagrant up --provision          (force provision if already done)
+vagrant up --no-provision       (no provision)
+vagrant reload --provision
+vagrant reload --no-provision
+vagrant reload --provision-with shell
+
+config.vm.provision "ansible", playbook: "playbook.yml"
+config.vm.provision "puppet"
+config.vm.provision "shell", inline: "echo abc"
+config.vm.provision "shell", path: "script.sh"
+config.vm.provision "shell", path: "script.sh", run: "always"
+config.vm.provision "file", source: "box-version.txt", destination: "box-version.txt"
+
+--------------------------------------------------------------------------------
+Box versioning using git:
+
+- Install git
+- Create ~/gitconfig:
+    git config --global user.name "Włodzimierz Gajda"
+    git config --global user.email gajdaw@gajdaw.pl
+- Go to folder with Vagrantfile and create git repo:
+    git init
+- Create .gitignore file and exclude .vagrant folder:
+    echo .vagrant > .gitignore
+- Also ignore .box:
+    echo "*.box" >> .gitignore
+- Git add files and folders:
+    git add -A
+- Initial commit:
+    git commit -m "Initial version"
+- Tag first commit:
+    git tag -a v0.1.0 -m "Release 0.1.0"
+- Check tags:
+    git tag
+- Check history with tag list:
+    git log --oneline --decorate
+- Check status:
+    git status
+    git status -sb
+
+--------------------------------------------------------------------------------
+Virtualbox related:
+
+- Name
+- Memory
+- CPU
+- GUI
+
+config.vm.provider "virtualbox" do |v|
+    v.name = "my-fantastic-project"
+    v.memory = 4096
+    v.cpus = 2
+    v.gui = true
+end
+
+--------------------------------------------------------------------------------
+Additional options:
+
+- Hostname:
+    config.vm.hostname = "abc.example.net"
+
+- A post boot message:
+    config.vm.post_up_message = "The application is available at http://abc.example.lh:8765"
+
+- Time out in seconds:
+    config.vm.boot_timeout = 300
+    config.vm. graceful_halt_timeout = 60
+
+- Customizing public values:
+    config.ssh.username = "username"
+    config.ssh.password = "password"
+    config.ssh.host = "localhost"
+    config.ssh.port = 2222
+    config.ssh.private_key_path = "/path/to/key"
+    config.ssh.insert_key = true
+
+- Box cn be on a custom place (NOT atlas.hashicorp.com):
+    config.vm.box = "apache-v1.0.0"
+    config.vm.box_url = "http://boxes.gajdaw.pl/apache/apache-v1.0.0.box"
+
+- Possible checksums:
+    config.vm.box_download_checksum_type = "sha256"
+    config.vm.box_download_checksum = "01234567890"
+
+- X11 forwarding:
+    config.ssh.forward_x11 = true
+
+- Synced folders:
+    config.vm.synced_folder [HOST-PATH], [GUEST-PATH]
+    config.vm.synced_folder "/dir/on/host/Mac/or/Linux", "/dir/on/guest/ubuntu"
+    config.vm.synced_folder ".", "/vagrant"
+    config.vm.synced_folder "/some/path", "/vagrant"
+    config.vm.synced_folder "./some/dir/first", "/first", create: true
+    config.vm.synced_folder "./some/dir/second", "/second", create: true
+
+    Options:
+        - create: If the host’s directory doesn’t exist it will be created (defaults to false)
+        - disabled: Should the synchronization be turned on? (defaults to true)
+        - group: Group of the guest’s directory (defaults to ssh user)
+        - owner: Owner of the guest’s directory (defaults to ssh user)
+        - type and mount_options: Define the method of synchronization
+            Types:
+                - Default synchronization supported by the provider (bidirectional, slowest performance)
+                - NFS (bidirectional, best performance)
+                    - Not supported on Windows hosts, Need NFS install on Linux hosts.
+                    - Requires private network option.
+                - rsync (one-way host-to-guest)
+                    rsync__exclude: ".git/"     (exlcude files and folders)
+                    rsync_auto: true            (monitor changes on host and sync)
+                - SMB (bidirectional, performance comparable with NFS)
+
+--------------------------------------------------------------------------------
+Using an "if" statement:
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+    config.vm.box = "ubuntu/trusty32 "
+
+    require 'ffi'
+    if FFI::Platform::IS_WINDOWS
+        print "\n\n ===> win\n\n"
+        config.vm.synced_folder ".", "/vagrant", :nfs => false
+        config.vm.network :forwarded_port, guest: 80, host: 8880
+    else
+        print "\n\n ===> not win\n\n"
+        config.vm.network :private_network, ip: "192.168.0.100"
+        config.vm.synced_folder ".", "/vagrant", :nfs => true
+    end
+end
+
+--------------------------------------------------------------------------------
+Multiple machines:
+
+Vagrant.configure(2) do |config|
+  config.vm.define "web", primary: true do |web|
+    web.vm.box = "chef/centos-6.5-i386"
+  end
+
+  config.vm.define "db" do |db|
+    db.vm.box = "ubuntu/trusty32"
+  end
+
+end
+
+--------------------------------------------------------------------------------
+Vagrant plugins:
+
+https://github.com/mitchellh/vagrant/wiki/Available-Vagrant-Plugins
+
+Some nice plugins:
+
+https://github.com/cogitatio/vagrant-hostsupdater
+https://github.com/dotless-de/vagrant-vbguest
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------

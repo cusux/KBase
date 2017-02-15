@@ -1,0 +1,39 @@
+#### Subject:   Runnnig with docker-machine
+#### Author:    Caseraw
+#### Date:      22-01-2017
+
+--------------------------------------------------------------------------------
+Original docs:
+https://docs.docker.com/machine/get-started/
+
+--------------------------------------------------------------------------------
+Why docker-machine? In short:
+In cases of multiple local machines with multi node experimentation.
+
+--------------------------------------------------------------------------------
+Workflow:
+
+# Check any machine listed:
+docker-machine ls
+
+# Create a machine called default on virtualbox:
+docker-machine create --driver virtualbox default
+
+    # After creating you need to connect to it:
+    docker-machine env default
+
+    # After connection you need to set environment variable to shell session:
+    eval "$(docker-machine env default)"
+
+    # This is needed after every restart or new shell session
+
+# Stop a docker-machine named default:
+docker-machine stop default
+
+# Start a docker-machine named default:
+docker-machine start default
+
+# Remove a docker-machine named default:
+docker-machine rm default
+
+--------------------------------------------------------------------------------

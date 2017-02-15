@@ -1,0 +1,12 @@
+#### Subject:   Installing Vagrant
+#### Author:    Caseraw
+#### Date:      11-01-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+Go to and download the required package/installer:
+https://www.vagrantup.com/
+
+Follow up by installing the package.
+
+--------------------------------------------------------------------------------

@@ -1,0 +1,53 @@
+#### Subject:   Change the hostname of a machine.
+#### Author:    Caseraw
+#### Date:      28-01-2016
+
+--------------------------------------------------------------------------------
+Client:
+
+Just have a VNC viewer installed:
+https://www.realvnc.com/download/viewer/
+
+--------------------------------------------------------------------------------
+Server:
+
+Make sure a minimum of X Windows is installed:
+
+yum check-update
+yum groupinstall "X Window System"
+yum install gnome-classic-session gnome-terminal nautilus-open-terminal control-center liberation-mono-fonts
+unlink /etc/systemd/system/default.target
+ln -sf /lib/systemd/system/graphical.target /etc/systemd/system/default.target
+reboot
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Install VNC:
+yum install tigervnc-server
+
+Create a user or use an existing user you want to setup a VNC session for:
+useradd username
+
+Copy a template file to use edit and user as a service:
+cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service
+
+Edit the file:
+vi /etc/systemd/system/vncserver@:1.service
+
+Add firewall rules:
+firewall-cmd --permanent --zone=public --add-service vnc-server
+firewall-cmd --reload
+
+Become the user you want to setup a VNC session for:
+su - username
+
+Run:
+vncserver
+
+Setup systemctl VNC service:
+su -
+systemctl daemon-reload
+systemctl enable vncserver@:1.service
+reboot
+systemctl start vncserver@:1.service
+systemctl status vncserver@:1.service

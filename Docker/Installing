@@ -12,7 +12,7 @@ Create a yum docker repository:
 
 Create a file in: /etc/yum.repos.d/docker.repo
 
-Withing this file add:
+Within this file add:
 
 [dockerrepo]
 name=Docker Repository
