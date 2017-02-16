@@ -230,11 +230,13 @@ Some nice plugins:
 
 https://github.com/cogitatio/vagrant-hostsupdater
 https://github.com/dotless-de/vagrant-vbguest
-
-
-
-
-
-
+https://github.com/oscar-stack/vagrant-hosts
 
 --------------------------------------------------------------------------------
+Known issues that may come up:
+
+If a box or vagrant instance is not deleted correct it might still exist preventing new deployments:
+Run:
+
+vboxmanage list vms
+vboxmanage unregister <ID> --delete

@@ -8,30 +8,46 @@ Vagrantfile example; multiple boxes.
 
 Vagrant.configure(2) do |config|
 
-    config.vm.define "web", primary: true do |web|
-        web.vm.box = "centos/7"
-        web.vm.hostname = "webtest.caseraw.com"
-        web.vm.network "private_network", type: "dhcp"
-        web.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true,
-            rsync__exclude: [".git/", ".idea/"]
-        web.vm.provider "virtualbox" do |vbox|
-            vbox.name = "Web-Node"
-            vbox.memory = 4096
-            vbox.cpus = 2
+    config.vm.define "control", primary: true do |control|
+        control.vm.box = "centos/7"
+        control.vm.provider "virtualbox" do |vbox|
+            vbox.name = "control-node"
+            #vbox.memory = 4096
+            #vbox.cpus = 2
         end
+        control.vm.hostname = "control.caseraw.com"
+        control.vm.network "private_network", ip: "172.16.1.10"
+        control.vm.provision :hosts, :sync_hosts => true
+        control.vm.provision "shell", inline: "sudo systemctl restart network"
+        control.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true, rsync__exclude: [".git/", ".idea/"]
     end
 
-    config.vm.define "db" do |db|
-        db.vm.box = "centos/7"
-        db.vm.hostname = "dbtest.caseraw.com"
-        db.vm.network "private_network", type: "dhcp"
-        web.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true,
-            rsync__exclude: [".git/", ".idea/"]
-        db.vm.provider "virtualbox" do |vbox|
-            vbox.name = "DB-Node"
-            vbox.memory = 4096
-            vbox.cpus = 2
+    config.vm.define "node1" do |node1|
+        node1.vm.box = "centos/7"
+        node1.vm.provider "virtualbox" do |vbox|
+            vbox.name = "node1"
+            #vbox.memory = 4096
+            #vbox.cpus = 2
         end
+        node1.vm.hostname = "node1.caseraw.com"
+        node1.vm.network "private_network", ip: "172.16.1.11"
+        node1.vm.provision :hosts, :sync_hosts => true
+        node1.vm.provision "shell", inline: "sudo systemctl restart network"
+        node1.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true, rsync__exclude: [".git/", ".idea/"]
+    end
+
+    config.vm.define "node2" do |node2|
+        node2.vm.box = "centos/7"
+        node2.vm.provider "virtualbox" do |vbox|
+            vbox.name = "node2"
+            #vbox.memory = 4096
+            #vbox.cpus = 2
+        end
+        node2.vm.hostname = "node2.caseraw.com"
+        node2.vm.network "private_network", ip: "172.16.1.12"
+        node2.vm.provision :hosts, :sync_hosts => true
+        node2.vm.provision "shell", inline: "sudo systemctl restart network"
+        node2.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true, rsync__exclude: [".git/", ".idea/"]
     end
 
 end
