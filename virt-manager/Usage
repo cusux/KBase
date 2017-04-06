@@ -1,0 +1,83 @@
+#### Subject:   Virt-manager
+#### Author:    Caseraw
+#### Date:      19-03-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+Command line to installing VM:
+
+qemu-img create -f raw -o size=50G /var/lib/libvirt/qemu/test02-centos7.img
+virt-install --name test02-centos7 --ram 2048 --disk path=/var/lib/libvirt/qemu/test02-centos7.img --vcpus=2 --os-type=Linux --network bridge=virbr0 --graphics vnc,port=5999 --console pty,target_type=serial --cdrom /var/lib/libvirt/images/CentOS-7-x86_64-Minimal-1611.iso
+
+--------------------------------------------------------------------------------
+Using virt-builder:
+
+# Image templates come from: http://libguestfs.org/download/builder/
+
+virt-builder centos-7.3 --root-password password:testpassword
+virt-install --name test03-centos7 --ram 2048 --vcpus=1 --disk path=/var/lib/libvirt/qemu/centos-7.3.img --import
+
+--------------------------------------------------------------------------------
+Using virsh:
+
+# List VM's
+virsh list
+virsh list --all
+
+# Start VM
+virsh start test01-centos7
+
+# Shutdown VM
+virsh shutdown test01-centos7
+
+# Reboot VM
+virsh reboot test01-centos7
+
+# Suspend VM
+virsh suspend test01-centos7
+
+# Resume VM
+virsh resume test01-centos7
+
+# List networks
+virsh net-list --all
+
+# Networks are stored at: /etc/libvirt/qemu/networks/
+
+# Check network xml
+virsh net-dumpxml isolated
+
+# Enable network
+virsh net-start isolated
+
+# Snapshot list
+virsh snapshot-list test01-centos7
+
+# Snapshot screate (only on qcow2 types)
+virsh snapshot-create test01-centos7
+
+# Revert to snapshot
+virsh snapshot-revert test01-centos7 --snapshotname "1234567890"
+
+--------------------------------------------------------------------------------
+Using virt-viewer:
+
+# List VM's
+virsh list
+virsh list --all
+
+# Connect to VM
+virt-viewer test02-centos7
+
+--------------------------------------------------------------------------------
+Using qemu-img:
+
+# Create image and attach it
+cd /var/lib/libvirt/images/
+qemu-img create -f raw addondisk1.img 1G
+virsh attach-disk test01-centos7 --source /var/lib/libvirt/images/addondisk1.img --target vdb --persistent
+
+# Convert raw into qcow2
+qemu-img convert -f raw -O qcow2 fedora-23.img fedora-23.qcow2
+
+--------------------------------------------------------------------------------

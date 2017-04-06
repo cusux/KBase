@@ -1,0 +1,43 @@
+#### Subject:   Installing Puppet
+#### Author:    Caseraw
+#### Date:      18-02-2016
+#### Based on:  CentOs7
+#### Source:    https://www.safaribooksonline.com/library/view/learning-puppet-4/9781491907993/
+#### Repo:      https://github.com/jorhett/learning-puppet4
+
+--------------------------------------------------------------------------------
+Adding the package collection repository:
+
+sudo yum install -y http://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+
+sources:
+https://docs.puppet.com/puppet/latest/puppet_collections.html#using-puppet-collections
+https://docs.puppet.com/puppet/latest/puppet_collections.html#enterprise-linux-7
+
+Instal puppet agent:
+sudo yum install -y puppet-agent
+
+Need to know stuff:
+- Executables are in /opt/puppetlabs/bin/
+- This puppet-agent package adds the file /etc/profile.d/puppet-agent.sh, which will add /opt/puppetlabs/bin to your path. You may need to restart your shell
+- A private copy of Ruby is installed in /opt/puppetlabs/puppet
+- The configuration directory stored in $confdir is now /etc/puppetlabs/puppet. Files in /etc/puppet will be ignored
+- The $ssldir directory is inside $confdir
+- The MCollective configuration directory is now /etc/puppetlabs/mcollective
+- The $vardir for Puppet is now /opt/puppetlabs/puppet/cache/
+- The $rundir for Puppet agent is now /var/run/puppetlabs
+- Modules, manifests, and the Hiera config file have a new directory: /etc/puppetlabs/code
+    - Puppet code and data has moved from $confdir to a new directory $codedir. This directory contains:
+        - The environments directory for $environmentpath
+        - The modules directory for $basemodulepath
+        - The hiera.yaml config file for $hiera_config
+
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------

@@ -1,0 +1,276 @@
+#### Subject:   Installing Puppet
+#### Author:    Caseraw
+#### Date:      18-02-2016
+#### Based on:  CentOs7
+#### Source:    https://www.safaribooksonline.com/library/view/learning-puppet-4/9781491907993/
+#### Repo:      https://github.com/jorhett/learning-puppet4
+
+--------------------------------------------------------------------------------
+Variables:
+
+$myvar          # valid
+$MyVar          # invalid
+
+$my_var         # valid
+$my-var         # invalid
+
+$my3numbers     # valid
+$3numbers       # invalid
+
+$_myvar         # valid inside a local scope
+$prog::_myvar   # deprecated: no underscore-prefixed variables out of scope
+
+$my_name        = 'Jo'           # string
+$num_tokens     = 115            # numeric
+$not_true       = false          # boolean
+$notdefined     = undef          # undefined variable
+
+<=- Variable string   - - - - - - - - - - - - - - - - - - - - - - - -=>
+Regular strings:
+
+$my_name = 'Dr. Evil'
+$how_much = '100 million'
+
+String with variable:
+notice( "Hello ${username}, glad to see you today!" )
+
+Long text line:
+$message_text = @(END)
+This is a very long message,
+which will be composed over
+many lines of text.
+END
+
+Long text line with variables:
+$message_text = @("END")
+Dear ${user},
+  Your password is ${password}.
+
+  Please login at ${site_url} to continue.
+END
+
+Text operators:
+\n          # Line feed (end of line terminator)
+\r          # Carriage return (necessary in Windows files)
+\s          # Space
+\t          # Tab character
+
+Delineate variable boundries with curly braces:
+$the_greeting = "Hello ${myname}, you have received ${num_tokens} tokens!"
+notice( "The second value in the list is ${my_list[1]}" )
+
+Examples:
+# Define the strings in advance
+$file_name = "/tmp/testfile2-${my_name}.txt"
+$the_greeting = "Hello ${myname}, you have received ${num_tokens} tokens!"
+
+# Don't use braces for variables that stand alone
+file { $file_name:
+  ensure  => present,
+  mode    => '0644',
+  replace => true,
+  content => $the_greeting,
+}
+
+# Output value from an array index 1
+notice( "The second value in the list is ${my_list[1]}" )
+
+# Output value stored in hash key alpha
+notice( "The value stored with key alpha is ${my_hash['alpha']}" )
+
+# Work around the need for both types of quotes in a variable
+$the_greeting = "we need 'single quotes' and \"double quotes\" here."
+
+# Place backslashes before special characters to avoid interpolation
+$describe = "\$user uses a \$ dollar sign and a \\ backslash"
+
+# Previously interpolated values won't be interpolated again
+$inform = "${describe}, and resolves to the value '${user}'."
+
+# dollars, not a variable
+$num_tokens = '$100 million'
+
+# windows share, not escape chars
+$cifs_share = '\\server\drive'
+
+Reserved words:
+and     elsif       node
+attr	false      private
+case	function   or
+class	if	       true
+default	in	       type
+define	import	   undef
+else	inherits   unless
+
+
+
+--------------------------------------------------------------------------------
+Number values:
+
+$decimal        = 1234      # valid Integer decimal assignment
+$decimal        = 12.34     # valid Float decimal assignment
+$octal          = 0775      # valid Integer octal assignment
+$hexadecimal    = 0xFFAA    # valid Integer hexadecimal assignment
+$string         = '001234'  # string containing a number with leading zeros
+
+--------------------------------------------------------------------------------
+Arrays:
+
+$my_list  = [1,3,5,7,11]          # array of Numeric values
+$my_names = ['Amy','Sam','Jen']   # array of String values
+$mixed_up = ['Alice',3,true]      # String, Number, Boolean
+$trailing = [4,5,6,]              # trailing commas OK, unlike JSON
+$embedded = [4,5,['a','b']]       # number, number, array of strings
+
+<=- Array to array - - -  - - - - - - - - - - - - - - - - - - - - - -=>
+
+[$first,$middle,$last] = ['Jo',undef,'Rhett']  # good
+[$first,$middle,$last] = ['Jo','Rhett']        # error
+
+<=- Convert array - - - - - - - - - - - - - - - - - - - - - - - - - -=>
+Convert array to separated list by comma:
+(the splat operator (*) operator)
+
+myfunction( *$Array_of_arguments ) { ... }
+
+<=- Mapping has key values  - - - - - - - - - - - - - - - - - - - - -=>
+
+# small hash of user home directories
+$homes = { 'Jack' => '/home/jack', 'Jill' => '/home/jill', }
+
+# Multiline definition
+$user = {
+  'username' => 'Jill',  # String value
+  'uid'      => 1001,    # Integer value
+  'create'   => true,    # Boolean value
+}
+
+--------------------------------------------------------------------------------
+Facter:
+
+$facter
+$facter --puppet
+
+$puppet facts find                      # JSON
+$facter --yaml                          # YAML
+$facter --json                          # JSON
+$puppet facts --render-as yaml          # YAML
+$puppet facts --render-as json          # JSON
+
+# Setting variable with facter
+$zero_or_one = bool2num( $facts['is_virtual'] );
+
+# md5() function provides the value for the message attribute
+notify { 'md5_hash':
+  message => md5( $facts['fqdn'] )
+}
+
+# Include the MD5 hash in the result string
+$result = "The MD5 hash for the node name is ${md5( $facts['fqdn'] )}"
+
+
+--------------------------------------------------------------------------------
+Log level functions:
+
+debug( message )
+info( message )
+notice( message )
+warning( message )
+err( message )
+
+Examples:
+notice( 'Beginning the program.' )
+notice( "Hello, ${username}" )
+notice( 1000000 )
+notice( true )
+
+$first_item = $my_list[1]
+$four_items = $my_list[3,6]
+$username = $my_hash['username']
+
+notice( "The user's name is ${username}" )
+notice( "The second value in my list is ${my_list[1]}" )
+notice( "The login username is ${my_hash['username']}" )
+
+file { $filename:
+  ensure  => present,
+  mode    => '0644',
+  replace => $replace_bool,
+  content => $file['content'],
+}
+
+file { '/etc/motd':
+  ensure  => present,
+  mode    => '0644',
+  replace => true,
+  content => "${facts['hostname']} runs ${facts['os']['release']['full']}",
+}
+
+--------------------------------------------------------------------------------
+Defining Attributes with a Hash:
+
+$resource_attributes = {
+  ensure    => present,
+  owner     => 'root',
+  group     => 'root',
+  'mode'    => '0644',
+  'replace' => true,
+}
+
+file { '/etc/config/first.cfg':
+  source => 'first.cfg',
+  *      => $resource_attributes,
+}
+
+file { '/etc/config/second.cfg':
+  source => 'config.cfg',
+  *      => $resource_attributes,
+}
+
+--------------------------------------------------------------------------------
+Declaring Multiple Resource Titles:
+
+file { ['/tmp/file_one.txt','/tmp/file_two.txt']:
+  ensure => present,
+  owner  => 'vagrant',
+}
+
+--------------------------------------------------------------------------------
+Declaring Multiple Resource Bodies:
+
+file {
+  'file_one':
+    ensure => present,
+    owner  => 'vagrant',
+    path   => 'file_one.txt',
+  ;
+
+  'file_two':
+    ensure => present,
+    owner  => 'vagrant',
+    path   => 'file_two.txt',
+  ;
+}
+
+file {
+  default:
+    ensure => present,
+    owner  => 'vagrant',
+  ;
+
+  'file_one': path => 'file_one.txt';
+  'file_two': path => 'file_two.txt';
+}
+
+--------------------------------------------------------------------------------
+
+Done until part:
+Adding to Arrays and Hashes
+Chapter 5
+
+
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------

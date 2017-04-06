@@ -1,0 +1,11 @@
+#### Subject:   Virt-manager
+#### Author:    Caseraw
+#### Date:      19-03-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+yum groupinstall "Virtualization Tools" "Virtualization Hypervisor" "Virtualization Platform" "Virtualization Client" virt-manager libguestfs-tools-c
+
+systemctl status libvirtd
+
+--------------------------------------------------------------------------------

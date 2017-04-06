@@ -1,0 +1,171 @@
+#### Subject:   Installing Puppet
+#### Author:    Caseraw
+#### Date:      18-02-2016
+#### Based on:  CentOs7
+#### Source:    https://www.safaribooksonline.com/library/view/learning-puppet-4/9781491907993/
+#### Repo:      https://github.com/jorhett/learning-puppet4
+
+--------------------------------------------------------------------------------
+Applying a manifest:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[vagrant@client ~]$ cat /vagrant/manifests/helloworld.pp
+
+notify { 'greeting':
+  message => 'Hello, world!'
+}
+
+[vagrant@client ~]$ puppet apply /vagrant/manifests/helloworld.pp
+Notice: Compiled catalog for client.example.com in environment production
+Notice: Hello, world!
+Notice: /Stage[main]/Main/Notify[greeting]/message:
+  defined 'message' as 'Hello, world!'
+Notice: Finished catalog run in 0.01 seconds
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+
+--------------------------------------------------------------------------------
+Viewing resources:
+The puppet resource command queries the node using the exact same code used by Puppet to compare and alter the system state. The output gives you the exact structure, syntax, and attributes to declare this alias resource in a Puppet manifest.
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[vagrant@pe-node1 manifests]$ puppet resource mailalias postmaster
+mailalias { 'postmaster':
+  ensure    => 'present',
+  recipient => ['root'],
+  target    => '/etc/aliases',
+}
+
+[root@pe-node1 manifests]# puppet resource user vagrant
+user { 'vagrant':
+  ensure           => 'present',
+  comment          => 'vagrant',
+  gid              => '1000',
+  groups           => ['vagrant'],
+  home             => '/home/vagrant',
+  password         => '$1$ysiWfMjg$5Jg7hpChlqo0KMUeCN5fO.',
+  password_max_age => '99999',
+  password_min_age => '0',
+  shell            => '/bin/bash',
+  uid              => '1000',
+}
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+--------------------------------------------------------------------------------
+Executing programs:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+(This example is not the best way to create the file as it's imperative and not idempotent).
+
+[vagrant@pe-node1 manifests]$ cat tmp-testfile.pp
+exec { 'echo-holy-cow':
+  path      => ['/bin'],
+  cwd       => '/tmp',
+  command   => 'echo "holy cow!" > testfile.txt',
+  creates   => '/tmp/testfile.txt',
+  returns   => [0],
+  logoutput => on_failure,
+}
+
+[vagrant@pe-node1 manifests]$ puppet apply tmp-testfile.pp
+Notice: Compiled catalog for pe-node1.caseraw.com in environment production in 0.15 seconds
+Notice: /Stage[main]/Main/Exec[echo-holy-cow]/returns: executed successfully
+Notice: Applied catalog in 0.03 seconds
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+(This example is better because it checks if file already exists and it matches for contents).
+
+[vagrant@pe-node1 manifests]$ cat tmp-testfile.pp
+file { '/tmp/testfile.txt':
+  ensure  => present,
+  mode    => '0644',
+  replace => true,
+  content => 'holy cow!',
+}
+
+[vagrant@pe-node1 manifests]$ puppet apply tmp-testfile.pp
+Notice: Compiled catalog for pe-node1.caseraw.com in environment production in 0.09 seconds
+Notice: /Stage[main]/Main/File[/tmp/testfile.txt]/ensure: defined content as '{md5}3d508c856685853ed8a168a290dd709c'
+Notice: Applied catalog in 0.02 seconds
+
+[vagrant@pe-node1 manifests]$ cat /tmp/testfile.txt
+holy cow!
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+--------------------------------------------------------------------------------
+Creating and Restoring file backups to local storage on node:
+
+Create a backup:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[root@pe-node1 manifests]# puppet filebucket --local backup /tmp/testfile.txt
+/tmp/testfile.txt: 0eb429526e5e170cd9ed4f84c24e442b
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+List backed-up files:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[root@pe-node1 manifests]# puppet filebucket --local list
+0eb429526e5e170cd9ed4f84c24e442b 2017-02-18 08:21:06 /tmp/testfile.txt
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+View specified backup:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[root@pe-node1 manifests]# puppet filebucket --local get 0eb429526e5e170cd9ed4f84c24e442b
+holy cow!
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+Check difference between backed-up file and existing file:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[root@pe-node1 manifests]# puppet filebucket --local diff 0eb429526e5e170cd9ed4f84c24e442b /tmp/testfile.txt
+--- /tmp/diff20170218-6756-cga9au	2017-02-18 08:35:01.655976823 +0000
++++ /tmp/testfile.txt	2017-02-18 08:34:59.279976823 +0000
+@@ -1 +1,3 @@
+ holy cow!
++ladidaa
++ding dong
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+Restore a backup:
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+[root@pe-node1 manifests]# puppet filebucket --local restore /tmp/testfile.txt 0eb429526e5e170cd9ed4f84c24e442b
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+<=- Start Terminal Output - - - - - - - - - - - - - - - - - - - - - -=>
+
+<=- End Terminal Output - - - - - - - - - - - - - - - - - - - - - - -=>
+
+--------------------------------------------------------------------------------

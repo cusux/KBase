@@ -1,0 +1,52 @@
+# Fix for residual text
+altscreen on
+
+# custom statusbar
+hardstatus off
+hardstatus alwayslastline
+hardstatus string '%{= kW}[ %{m}%H %{W}][%= %{= kw}%?%-Lw%?%{r}(%{g}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{W}][%{Y} %d/%m %{Y}%c %{W}]'
+
+# Turn welcome message off
+startup_message off
+
+# disable vbell (so wm urgency hints can work from within screen)
+vbell off
+
+# Increase the scrollback buffer
+defscrollback 5000
+
+# programs to autostart on screen startup
+#screen -t htop 0 htop
+#screen -t root 1 su -
+#screen -t bash 2 
+#screen -t bash 3
+#screen -t iftop 5
+#stuff "sudo iftop\012"
+#screen -t rtorrent 6
+#screen -t mutt 7
+#stuff "mutt\012"
+#screen -t log 9 
+#stuff "tail --follow=name --retry --lines=1000 /var/log/everything.log\012"
+#screen -t im 10
+#screen -t mc 8
+#stuff "mc /home/x33a /home/x33a/downloads\012"
+#select 1
+
+# for mutt transparency
+defbce on
+
+# set terminal name
+term rxvt-256color
+
+# message display time (seconds)
+msgwait 2
+
+# 256 colour support for urxvt
+terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# access terminals higher than 0-9 range
+#
+# add the following commands to command-class selectHighs
+bind -c selectHighs 0 select 10 # C-a - 0 will open terminal 10
+
+bind - command -c selectHighs	# bind hyphen to command-class selectHighs
