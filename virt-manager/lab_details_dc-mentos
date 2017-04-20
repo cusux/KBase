@@ -1,0 +1,43 @@
+# Hostfile setup:
+
+printf "\n# lab.com host config\n" >> /etc/hosts && \
+printf "192.168.10.10\tnfs.lab.com\t nfslab\n" >> /etc/hosts && \
+printf "192.168.10.250\tldap.lab.com\t ldaplab\n" >> /etc/hosts
+
+--------------------------------------------------------------------------------
+# NFS server:
+Hostname alias  =>  nfslab
+FQDN            =>  nfs.lab.com
+ipv4.addresses  =>  192.168.10.10/24
+ipv4.gateway    =>  192.168.10.1
+ipv4.dns        =>  192.168.10.1
+
+Setup commands:
+hostnamectl set-hostname nfs.lab.com
+nmcli c m eth0 ipv4.method manual ipv4.addr "192.168.10.10/24" gw4 "192.168.10.1" ipv4.dns "192.168.10.1" autoconnect yes && nmcli c reload && systemctl restart network
+ssh-copy-id nfslab
+
+--------------------------------------------------------------------------------
+# LDAP server:
+Hostname alias  =>  ldaplab
+FQDN            =>  ldap.lab.com
+ipv4.addresses  =>  192.168.10.250/24
+ipv4.gateway    =>  192.168.10.1
+ipv4.dns        =>  192.168.10.1
+
+Setup commands:
+hostnamectl set-hostname ldap.lab.com
+nmcli c m eth0 ipv4.method manual ipv4.addr "192.168.10.250/24" gw4 "192.168.10.1" ipv4.dns "192.168.10.1" autoconnect yes && mcli c reload && systemctl restart network
+ssh-copy-id ldaplab
+
+--------------------------------------------------------------------------------
+
+# IPA server:
+
+# Regular client 1:
+
+# Regular client 2:
+
+# Regular server 1:
+
+# Regular server 2:
