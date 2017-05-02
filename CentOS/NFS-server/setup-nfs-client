@@ -1,0 +1,42 @@
+#### Subject:   NFS client install
+#### Author:    Caseraw
+#### Date:      22-04-2017
+#### Remark:    Based on CentOS7
+#### Source:    http://www.itzgeek.com/how-tos/linux/centos-how-tos/how-to-setup-nfs-server-on-centos-7-rhel-7-fedora-22.html
+
+--------------------------------------------------------------------------------
+# Install packages
+yum install -y nfs-utils libnfsidmap
+
+--------------------------------------------------------------------------------
+# Enable and start services
+systemctl enable rpcbind &&\
+systemctl start rpc-statd
+
+--------------------------------------------------------------------------------
+# Create mount directory
+mkdir -p /mnt/nfsfileshare
+
+--------------------------------------------------------------------------------
+# Manual mount
+mount nfslab:/nfsfileshare /mnt/nfsfileshare
+
+# OR
+mount -t nfs -v nfs.lab.com:/nfsfileshare /mnt/nfsfileshare
+
+--------------------------------------------------------------------------------
+# Autofs
+
+yum -y install autofs
+
+
+vi /etc/auto.master.d/nfs.autofs
+
+
+
+--------------------------------------------------------------------------------
+
+
+
+
+--------------------------------------------------------------------------------

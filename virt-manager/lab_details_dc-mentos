@@ -2,6 +2,7 @@
 
 printf "\n# lab.com host config\n" >> /etc/hosts && \
 printf "192.168.10.10\tnfs.lab.com\t nfslab\n" >> /etc/hosts && \
+printf "192.168.10.15\ttest01lab.lab.com\t test01lab\n" >> /etc/hosts && \
 printf "192.168.10.250\tldap.lab.com\t ldaplab\n" >> /etc/hosts
 
 --------------------------------------------------------------------------------
@@ -34,7 +35,20 @@ ssh-copy-id ldaplab
 
 # IPA server:
 
+--------------------------------------------------------------------------------
 # Regular client 1:
+Hostname alias  =>  test01lab
+FQDN            =>  test01lab.lab.com
+ipv4.addresses  =>  192.168.10.15/24
+ipv4.gateway    =>  192.168.10.1
+ipv4.dns        =>  192.168.10.1
+
+Setup commands:
+hostnamectl set-hostname ldap.lab.com
+nmcli c m eth0 ipv4.method manual ipv4.addr "192.168.10.15/24" gw4 "192.168.10.1" ipv4.dns "192.168.10.1" autoconnect yes && mcli c reload && systemctl restart network
+ssh-copy-id ldaplab
+
+--------------------------------------------------------------------------------
 
 # Regular client 2:
 

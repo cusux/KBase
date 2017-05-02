@@ -1,0 +1,46 @@
+#### Subject:   NFS server install
+#### Author:    Caseraw
+#### Date:      22-04-2017
+#### Remark:    Based on CentOS7
+#### Source:    http://www.itzgeek.com/how-tos/linux/centos-how-tos/how-to-setup-nfs-server-on-centos-7-rhel-7-fedora-22.html
+
+--------------------------------------------------------------------------------
+# Install packages
+yum install -y nfs-utils libnfsidmap
+
+--------------------------------------------------------------------------------
+# Enable and start services
+systemctl enable rpcbind &&\
+systemctl enable nfs-server &&\
+systemctl start rpcbind &&\
+systemctl start nfs-server &&\
+systemctl start rpc-statd &&\
+systemctl start nfs-idmapd
+
+--------------------------------------------------------------------------------
+# Create share directory and set permissions
+mkdir /nfsfileshare &&\
+chmod 777 /nfsfileshare
+
+--------------------------------------------------------------------------------
+# Set NFS export file with options
+vi /etc/exports
+
+    # Add below line
+    /nfsfileshare       192.168.10.0/24(rw,sync,no_root_squash)
+
+    [share dir]         [shared with][options]
+
+    - Sharing with can be on one client or a range of clients with IP addresses.
+
+--------------------------------------------------------------------------------
+# Reload exports
+exportfs -a
+exportfs -r
+
+--------------------------------------------------------------------------------
+# Set and reload firewall
+firewall-cmd --permanent --zone public --add-service mountd &&\
+firewall-cmd --permanent --zone public --add-service rpc-bind &&\
+firewall-cmd --permanent --zone public --add-service nfs &&\
+firewall-cmd --reload
