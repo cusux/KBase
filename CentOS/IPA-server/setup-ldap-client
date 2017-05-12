@@ -1,0 +1,13 @@
+#### Subject:   LDAP client install
+#### Author:    Caseraw
+#### Date:      12-05-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+# Install packages
+yum install -y nscd nss-pam-ldapd authconfig
+
+--------------------------------------------------------------------------------
+# Install packages
+
+authconfig --enableldap --enableldapauth --ldapserver=ldap://ipa.lab.dev --ldapbasedn="dc=lab,dc=dev" --ldaploadcacert=ftp://ipa.lab.dev/pub/ca.crt --enablemkhomedir --update

@@ -1,0 +1,18 @@
+#### Subject:   FTP server install
+#### Author:    Caseraw
+#### Date:      12-05-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+# Install packages
+yum install -y vsftp
+
+systemctl enable vsftpd
+systemctl start vsftpd
+
+--------------------------------------------------------------------------------
+# Add firewall rule
+firewall-cmd --permanent --add-service=ftp
+firewall-cmd --reload
+
+--------------------------------------------------------------------------------

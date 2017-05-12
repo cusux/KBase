@@ -1,0 +1,39 @@
+#### Subject:   IPA server install
+#### Author:    Caseraw
+#### Date:      09-05-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+# Make sure the hostname is set up correctly including the FQDN
+--------------------------------------------------------------------------------
+# Install packages
+
+# VM's might need entropy... so with this you can create random entropy
+yum install -y epel-release
+yum install -y rng-tools
+systemctl enable rngd
+systemctl start rngd
+
+# Install IPA server
+yum install -y ipa-server ipa-server-dns bind-dyndb-ldap
+systemctl enable sssd
+
+--------------------------------------------------------------------------------
+# Install IPA with below command, and provide required details
+ipa-server-install
+
+# If needed provide additional parameters
+ipa-server-install --setup-dns --allow-zone-overlap
+
+--------------------------------------------------------------------------------
+# Add firewall rules
+firewall-cmd --permanent --add-service={http,https,ldap,ldaps,kerberos,kpasswd,ntp,dns}
+firewall-cmd --reload
+
+--------------------------------------------------------------------------------
+# Additional login settings
+authconfig --enablemkhomedir --update
+
+--------------------------------------------------------------------------------
+# Make self signed certificate available
+This is placed in: /etc/ipa/
