@@ -9,13 +9,13 @@
 # Install packages
 
 # VM's might need entropy... so with this you can create random entropy
-yum install -y epel-release
-yum install -y rng-tools
-systemctl enable rngd
+yum install -y epel-release &&\
+yum install -y rng-tools &&\
+systemctl enable rngd &&\
 systemctl start rngd
 
 # Install IPA server
-yum install -y ipa-server ipa-server-dns bind-dyndb-ldap
+yum install -y ipa-server ipa-server-dns bind-dyndb-ldap &&\
 systemctl enable sssd
 
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ ipa-server-install --setup-dns --allow-zone-overlap
 
 --------------------------------------------------------------------------------
 # Add firewall rules
-firewall-cmd --permanent --add-service={http,https,ldap,ldaps,kerberos,kpasswd,ntp,dns}
+firewall-cmd --permanent --add-service={http,https,ldap,ldaps,kerberos,kpasswd,ntp,dns} &&\
 firewall-cmd --reload
 
 --------------------------------------------------------------------------------
@@ -37,3 +37,7 @@ authconfig --enablemkhomedir --update
 --------------------------------------------------------------------------------
 # Make self signed certificate available
 This is placed in: /etc/ipa/
+
+--------------------------------------------------------------------------------
+# Test is works:
+kinit admin

@@ -5,14 +5,13 @@
 
 --------------------------------------------------------------------------------
 # Install packages
-yum install -y vsftp
-
-systemctl enable vsftpd
+yum install -y vsftpd &&\
+systemctl enable vsftpd &&\
 systemctl start vsftpd
 
 --------------------------------------------------------------------------------
 # Add firewall rule
-firewall-cmd --permanent --add-service=ftp
+firewall-cmd --permanent --add-service=ftp &&\
 firewall-cmd --reload
 
 --------------------------------------------------------------------------------

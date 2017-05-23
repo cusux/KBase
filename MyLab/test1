@@ -1,0 +1,53 @@
+--------------------------------------------------------------------------------
+
+1)  Root password is lost, make sure you gain access to the system.
+
+2)  Configure hostname with: su02-srvr1.lab1.com
+    Configure NIC with IP: 192.168.10.20/24, Gateway: 192.168.10.1, DNS: 192.168.10.200.
+
+3)  Set default boot target to multiuser.
+
+4)  Set SELinux to enforcing mode.
+
+5)  Perform a case-insensitive search on "then" in /etc/profile and save the result in /var/tmp/pattern.txt.
+
+6)  Activate and start firewalld.
+
+7)  Set primary prompt for user root to display the hostname, username and current working directory.
+
+8)  Create users barry, harry, larry, mary, gary with home directories and password "password".
+    Accounts for mary and barry should expire on 31-12-2017.
+    Accounts for larry and gary should have secondary group to "dba" (create it if not existing).
+
+9)  Create directory "testdir" in mary's homedir as mary.
+    Set ACL on it so barry has read and write access.
+
+10) Setup a yum repository with origin located at "ftp://su01-ipa.lab1.com/pub/rhel7".
+
+11) Create a logical volume called "linuxadmin" with the size of 10 LogicalExtends in volume group "vgtest" (create vgtest with 32MB PE size).
+    Create a mount point at /mnt/linuxadmin and mount the volume.
+    Make the mount persistent after reboot.
+
+12) Add group called linuxadmin and change group ownership of "/mnt/linuxadmin" to linuxadmin.
+
+13) Extend linuxadmin filesystem in vgtest with 35MB.
+
+14) Create a swap partition of 65MB on available disk.
+    Use UUID to make persistent after reboot.
+
+15) Create a standard partition of 60MB on available disk and format it with ext4.
+    Mount it on /mnt/test1.
+    Use UUID to make persistent after reboot.
+
+16) Create a directory /extra_root and apply SELinux context of /root on it.
+
+17) Set up a cron job as user mary to run every Monday on 01:20 AM.
+    It takes the timestamp of that moment and appends it to a file "cronstamp" in mary's homedir.
+
+18) Use bzip2 to create a compressed archive of /usr/local directory and store it in /root/testarchive.
+
+19) Enable the use of "at" for the user barry and deny for user gary.
+
+20) Modify the bootloader and set the default autoboot timer to 2 seconds.
+
+--------------------------------------------------------------------------------
