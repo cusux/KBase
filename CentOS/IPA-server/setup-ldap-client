@@ -4,10 +4,35 @@
 #### Remark:    Based on CentOS7
 
 --------------------------------------------------------------------------------
+# There are several ways to do this!!!
+# Recommended is to perform the ipa-client-install option.
+# If you use authconfig you can also choose to perform the GUI install ... for this you need to replace "authconfig" with "autconfig-gtk" when installing packages.
+
+--------------------------------------------------------------------------------
+# Option 1
 # Install packages
 yum install -y nscd nss-pam-ldapd authconfig
 
---------------------------------------------------------------------------------
-# Install packages
-
+# Configure with authconfig cli
 authconfig --enableldap --enableldapauth --ldapserver=ldap://ipa.lab.dev --ldapbasedn="dc=lab,dc=dev" --ldaploadcacert=ftp://ipa.lab.dev/pub/ca.crt --enablemkhomedir --update
+
+--------------------------------------------------------------------------------
+# Option 2
+# Install packages
+yum install -y sssd authconfig krb5-workstation
+
+# Configure with authconfig cli
+authconfig --enableldap --enableldapauth --ldapserver=ldap://ipa.lab.dev --ldapbasedn="dc=lab,dc=dev" --ldaploadcacert=ftp://ipa.lab.dev/pub/ca.crt --enablemkhomedir --update
+
+--------------------------------------------------------------------------------
+# Option 3 (RECOMMENDED)
+# Make sure you have your IPA server setup correctly!
+# Make sure the client machine targets the correct DNS (your IPA server IP).
+# Make sure you have the admin user an password.
+# All of these are needed for the install to run as smooth as possible.
+
+# Install packages
+yum install -y ipa-client
+
+# Configure with ipa-client-install command
+ipa-client-install

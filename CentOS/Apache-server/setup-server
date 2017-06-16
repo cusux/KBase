@@ -1,0 +1,21 @@
+#### Subject:   Apache server install
+#### Author:    Caseraw
+#### Date:      03-06-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+# Install packages and configure
+
+yum install -y httpd
+systemctl enable httpd &&\
+systemctl start httpd &&\
+systemctl enable firewalld &&\
+systemctl start firewalld &&\
+firewall-cmd --permanent --add-service=http &&\
+firewall-cmd --reload
+
+--------------------------------------------------------------------------------
+# Create directory and set permissions
+mkdir ~/public_html &&\
+chmod 711 ~/public_html &&\
+semanage boolean -m httpd_enable_homedirs --on

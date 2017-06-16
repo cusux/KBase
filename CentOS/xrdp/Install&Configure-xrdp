@@ -13,24 +13,19 @@ Server:
 
 Make sure a minimum of GNOME is installed.
 
-yum install -y epel-release
-yum install -y xrdp tigervnc-server
-
+yum install -y epel-release &&/
+yum install -y xrdp tigervnc-server &&/
+systemctl start xrdp.service &&/
+netstat -antup | grep xrdp &&/
+systemctl enable xrdp.service &&/
 systemctl start xrdp.service
-netstat -antup | grep xrdp
-systemctl enable xrdp.service
 
 # Firewall
-firewall-cmd --permanent --zone=public --add-port=3389/tcp
+firewall-cmd --permanent --add-port=3389/tcp &&/
 firewall-cmd --reload
 
 # SELinux
-chcon --type=bin_t /usr/sbin/xrdp
+chcon --type=bin_t /usr/sbin/xrdp &&/
 chcon --type=bin_t /usr/sbin/xrdp-sesman
 
 # Now you can connect via the RDP client
-
-
-
-192.168.100.221
-192.168.100.37

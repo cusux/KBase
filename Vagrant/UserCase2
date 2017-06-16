@@ -1,0 +1,41 @@
+#### Subject:   Installing Vagrant
+#### Author:    Caseraw
+#### Date:      04-06-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+Vagrantfile example; multiple boxes.
+
+Vagrant.configure(2) do |config|
+
+    config.vm.define "server1", primary: true do |server1|
+        server1.vm.box = "centos/7"
+        server1.vm.provider "virtualbox" do |vbox|
+            vbox.name = "server1"
+            vbox.memory = 1024
+            vbox.cpus = 1
+        end
+        server1.vm.hostname = "server1.caseraw.com"
+        server1.vm.network "private_network", ip: "172.16.1.10"
+        server1.vm.network "private_network", ip: "172.16.1.11"
+        server1.vm.provision :hosts, :sync_hosts => true
+        server1.vm.provision "shell", inline: "sudo systemctl restart network"
+        server1.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true, rsync__exclude: [".git/", ".idea/"]
+    end
+
+    config.vm.define "server2" do |server2|
+        server2.vm.box = "centos/7"
+        server2.vm.provider "virtualbox" do |vbox|
+            vbox.name = "server2"
+            vbox.memory = 1024
+            vbox.cpus = 1
+        end
+        server2.vm.hostname = "server2.caseraw.com"
+        server2.vm.network "private_network", ip: "172.16.1.12"
+        server2.vm.network "private_network", ip: "172.16.1.13"
+        server2.vm.provision :hosts, :sync_hosts => true
+        server2.vm.provision "shell", inline: "sudo systemctl restart network"
+        server2.vm.synced_folder ".", "/vagrant", type: "rsync", sync_auto: true, rsync__exclude: [".git/", ".idea/"]
+    end
+
+end
