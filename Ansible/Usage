@@ -1,9 +1,12 @@
-#### Subject:   Using Puppet
+#### Subject:   Using Ansible
 #### Author:    Caseraw
 #### Date:      17-01-2016
 
 --------------------------------------------------------------------------------
-Ansible commands:
+Ansible AdHoc example commands:
+
+# Get help:
+ansible-doc
 
 # List all hosts:
 ansible all --list-hosts
@@ -11,8 +14,14 @@ ansible all --list-hosts
 # Run ping module on all host groups:
 ansible all -m ping
 
+# Gather facts
+ansible localhost -m setup
+
 # Run list command:
 ansible all -a "ls -la /home/ansible"
+
+# Check uptime
+ansible localhost -m command -a "uptime"
 
 # Run cat command for which elevated rights are required:
 ansible all -s -a "cat /var/log/messages"
@@ -23,17 +32,22 @@ ansible centos -m copy -a "src=test.txt dest=/tmp/test.txt"
 # Install package on ubuntu host group using apt module:
 ansible ubuntu -s -m apt -a "name=elinks state=latest"
 
-# Install package on centos host group using yum module:
-ansible ubuntu -s -m yum -a "name=httpd state=latest"
-
 # Uninstall package on Ubuntu host group using apt module:
 ansible ubuntu -s -m apt -a "name=elinks state=absent"
+
+# Install httpd and start httpd
+ansible ubuntu -s -m yum -a "name=httpd state=latest"
+ansible all -i hosts -u root -k -m yum -a "name=httpd state=latest"
+ansible all -i hosts -u root -k -m service -a "name=httpd state=started"
 
 # Add user on centos host group:
 ansible centos -s -m user -a "name=test"
 
 # Remove user on centos host group:
 ansible centos -s -m user -a "name=test state=absent"
+
+# Running a playbook:
+ansible-playbook -i hosts mariadb.yml
 
 --------------------------------------------------------------------------------
 Ansible playbook:

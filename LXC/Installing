@@ -1,0 +1,27 @@
+#### Subject:   Installing LXC
+#### Author:    Caseraw
+#### Date:      11-07-2017
+#### Remark:    Based on RHEL7x
+
+Source: https://www.tecmint.com/install-create-run-lxc-linux-containers-on-centos/
+
+--------------------------------------------------------------------------------
+# Install:
+
+yum install -y epel-release
+yum update -y
+yum install lxc lxc-templates lxc-extra debootstrap libvirt debootstrap perl
+
+# Enable ans start services
+systemctl enable lxc
+systemctl enable libvirtd
+
+systemctl start lxc
+systemctl start libvirtd
+
+systemctl status lxc
+systemctl status libvirtd
+
+--------------------------------------------------------------------------------
+# Check LXC kernel virtualization
+lxc-checkconfig

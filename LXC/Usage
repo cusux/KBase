@@ -1,0 +1,49 @@
+#### Subject:   Runnnig LXC
+#### Author:    Caseraw
+#### Date:      11-07-2017
+#### Remark:    Based on CentOS7
+
+--------------------------------------------------------------------------------
+# Template directory:
+/usr/share/lxc/templates/
+
+--------------------------------------------------------------------------------
+# Creating new container:
+lxc-create -n test1 -t debian
+
+# If packages and dependencies are not downloaded yet, it will download during the creation.
+# make sure internet connection is enabled/ensured.
+
+--------------------------------------------------------------------------------
+# Start the container in daemon mode:
+lxc-start -n test1 -d
+
+--------------------------------------------------------------------------------
+# List conatiners:
+lxc-ls --active
+lxc-ls --fancy
+
+--------------------------------------------------------------------------------
+# Start containers:
+lxc-start -n test1 -d
+
+--------------------------------------------------------------------------------
+# Use console:
+lxc-console -n test1
+
+# Use ctrl+a   and then followed by  "q"   to quit console
+
+--------------------------------------------------------------------------------
+# Stop containers:
+lxc-stop -n test1
+
+--------------------------------------------------------------------------------
+# Destroy containers:
+lxc-destroy -n test1
+
+--------------------------------------------------------------------------------
+# Create your own handy dandy bash function in .bashrc for connecting with xrdp
+
+function rdp2slave() {
+	xfreerdp -u amirs500 172.25.252.182 -t 3389
+}
