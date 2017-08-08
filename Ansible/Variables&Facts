@@ -1,0 +1,58 @@
+#### Subject:   Using Variables and Facts
+#### Author:    Caseraw
+#### Date:      25-07-2017
+
+--------------------------------------------------------------------------------
+Variable scopes:
+- Global    (accessible across plays in a playbook)
+- Play  (inside a play)
+- Host  (each host has it's own)
+
+Registered with: register
+Referenced with: {{ varname }}
+Python lists and dictionaries are available => my.var  OR   my['var']
+
+Variables can be applied at any level:
+- Playbook, before tasks block using "vars" block
+- Role, in roles/rolename/vars directory using playbook structure
+- Group in inventory file
+- Host in inventory file
+- Command line using "--extra-vars" for "ansible-playbook"
+- Use "global_vars/all" file inside playblook structure
+- Include using, "include_vars: myvars.yml"
+
+Reserved variable names:
+- hostvars:           access variables and facts from other hosts
+- group_names:        a list of the groups that the current host is in
+- groups:             all groups (and all hostnames) in the inventory
+- inventory_hostname: the cirrent hostname that Ansible is executing tasks on
+- environment:        advanced Ansible environment details
+
+Variable precedence:
+- Role defaults
+- Inventory vars
+- Inventory group_vars
+- Inventory host_vars
+- Playbook group_vars
+- Playbook host_vars
+- Host facts
+- Play vars
+- Play vars_prompt
+- Play vars_files
+- Registered vars
+- Set_facts
+- Role and include vars
+- Block vars (only for tasks in block)
+- Task vars (only for the task)
+- Extra vars (in command line always wins precedence)
+
+--------------------------------------------------------------------------------
+Facts: information about hosts in your inventory that is gathered by Ansible when it connects
+- Facts are stored in a dictionary.
+- Facts gathering can be disabled in the playbook using, "gather_facts: False"
+- Gather facts an print it to stdout: "ansible <host> -m setup -u root"
+- Acces facts with {{ hostvars[host]['fact_name'] }}
+
+
+
+--------------------------------------------------------------------------------

@@ -1,0 +1,54 @@
+#### Subject:   Control flow and Conditionals
+#### Author:    Caseraw
+#### Date:      02-08-2017
+
+--------------------------------------------------------------------------------
+Control flow and Conditionals:
+
+- when
+- register
+- changed_when
+- failed_when
+- ignore_error
+
+--------------------------------------------------------------------------------
+# When:
+# The if true statement equivalent
+
+- name: Check if a variable is defined
+  debug: msg="Yes, myvariable is defined."
+  when: myvariable is defined
+
+--------------------------------------------------------------------------------
+# Register:
+# Capture output in variable
+
+- command: "ls /some/nonexistent/dir"
+  register: mylisting
+
+--------------------------------------------------------------------------------
+# Changed_when:
+# Report a change when given condition is true
+
+- command: "apt-get upgrade -y"
+  register: apt_upgrade
+  changed_when: "'0 upgraded, 0 newly installed' in apt_upgrade.stdout"
+
+--------------------------------------------------------------------------------
+# Failed_when:
+# Report a fail when given condition is true
+
+- command: "ls /some/nonexistent/dir"
+  register: mylisting
+  failed_when: "'foo' not in mylisting.stderr"
+
+--------------------------------------------------------------------------------
+# Ignore error:
+# Do not report error in the output.
+
+- command: "ls /some/nonexistent/dir"
+  register: mylisting
+  failed_when: "'foo' not in mylisting.stderr"
+  ignore_error
+
+--------------------------------------------------------------------------------

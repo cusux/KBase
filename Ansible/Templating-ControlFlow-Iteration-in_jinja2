@@ -1,0 +1,66 @@
+#### Subject:   Templating, Control flow and interation in Jinja2
+#### Author:    Caseraw
+#### Date:      02-08-2017
+
+Source: http://jinja.pocoo.org/docs/dev/templates
+
+--------------------------------------------------------------------------------
+# Delimiters:
+
+{% ... %} for Statements
+{{ ... }} for Expressions to print to the template output
+{# ... #} for Comments not included in the template output
+# ... ##  for Line Statements
+
+--------------------------------------------------------------------------------
+# Conditionals:
+
+# For loop examples:
+
+{% for server in groups['webservers'] %}
+  web{{ loop.index }}.tutorialinux.org
+{% enfor %}
+
+
+<ul id="navigation">
+  {% for item in navigation %}
+    <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
+  {% enfor %}
+</ul>
+
+--------------------------------------------------------------------------------
+# Filters:
+
+Example:
+
+  webservers:
+    - server1
+    - server2
+
+Put all of this in a comma seperated string:
+
+  {{ webservers|join(', ')}}
+
+--------------------------------------------------------------------------------
+# Escaping:
+# Don't show bewlow code as Jinja2 between the "raw" statements
+
+{% raw %}
+  {% for item in navigation %}
+    <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
+  {% enfor %}
+{% endraw %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------

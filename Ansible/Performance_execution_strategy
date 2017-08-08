@@ -1,0 +1,58 @@
+#### Subject:   Using YAML
+#### Author:    Caseraw
+#### Date:      03-08-2017
+
+--------------------------------------------------------------------------------
+# Execution strategy:
+
+- linear (default, 1 task at a time)
+- free (each host races to the end)
+
+# Performance:
+
+- local caching servers (yum, apt, etc...)
+- batch package installations (with_items list for a single package management transaction)
+
+--------------------------------------------------------------------------------
+# Using serial to perform a given number or percent or chunks of hosts at a time
+
+- name: Do 1 thing
+  hosts: webservers
+  serial: 2
+
+- name: Do 1 thing
+  hosts: webservers
+  serial: "30%"
+
+- name: Do 1 thing
+  hosts: webservers
+  serial:
+    - 1
+    - 5
+    - 10%
+
+--------------------------------------------------------------------------------
+# Free:
+
+- hosts: all
+  strategy: free
+  tasks:
+    .........
+
+--------------------------------------------------------------------------------
+# Max failure percentage:
+
+- hosts: webservers
+  max_fail_percentage: 5
+  serial:
+    - 10%
+
+--------------------------------------------------------------------------------
+# Performance:
+
+- Use local package servers for your fleet
+- Use with_items for installing packages
+- Use ControlPersis with OpenSSH setting a reasonable timeout
+- Pipelining (if "sudo" is not used)
+
+--------------------------------------------------------------------------------

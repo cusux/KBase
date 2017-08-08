@@ -1,0 +1,60 @@
+#### Subject:   Using Modules
+#### Author:    Caseraw
+#### Date:      25-07-2017
+
+Definitions:
+Modules:  A module is an Ansible equivelent of a function which takes some arguments.
+
+Links:
+A list of all modules:  https://docs.ansible.com/ansible/latest/list_of_all_modules.html
+
+--------------------------------------------------------------------------------
+Example:
+In this example "package" is a module that uses the package manager.
+
+...
+tasks:
+  - name: Install nginx.
+    package:
+      name: nginx
+      state: latest
+...
+
+--------------------------------------------------------------------------------
+Common modules:
+
+Package management:
+  - package
+
+Files and directories:
+  - template
+  - file
+  - lineinfile
+  - blockinfile
+  - copy
+  - fetch
+  - stat
+
+System:
+  - service
+  - user
+  - group
+  - cron
+  - hostname
+  - authorized_key
+  - iptables
+  - modprobe
+  - kernel_blacklist
+  - gluster_volume
+  - lvm
+  - zfs
+
+Various:
+  - raw
+  - synchronize
+  - get_url
+  - unarchive
+  - ec2 (amazon cloud)
+  - rds (amazon cloud)
+
+--------------------------------------------------------------------------------

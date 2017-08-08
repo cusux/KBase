@@ -1,0 +1,50 @@
+#### Subject:   Debugging
+#### Author:    Caseraw
+#### Date:      25-07-2017
+
+--------------------------------------------------------------------------------
+Debugging options:
+
+# Output a specific message
+- name: A simple debug statement
+  debug: msg="Test debugging!"
+
+
+# Register a variable and debug the contents with verbosity levels
+- name: Check uptime in a shell
+  shell: /usr/bin/uptime
+  register: myuptime
+
+- name: Uptime Debugging
+  debug: var=myuptime
+
+- name: Uptime, verbosity 1
+  debug: var=myuptime verbosity=1
+
+- name: Uptime, verbosity 2
+  debug: var=myuptime verbosity=2
+
+- name: Uptime, verbosity 3
+  debug: var=myuptime verbosity=3
+
+
+# Register a variable and work with variable dictionary
+- shell: whoami
+  register: user_name
+
+- name: Debug user_name
+  debug: var=user_name
+
+- name: Debug user_name.stdout
+  debug: msg="{{ user_name.stdout }}"
+
+- name: Debug user_name.stderr
+  debug: msg="{{ user_name.stderr }}"
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------

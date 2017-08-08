@@ -1,0 +1,42 @@
+#### Subject:   Using Playbooks
+#### Author:    Caseraw
+#### Date:      24-07-2017
+
+--------------------------------------------------------------------------------
+Playbook structure:
+
+To create the default structure you have 3 option;
+- Manually
+Make sure these files and folders exist.
+
+playbook_skeleton_dir/
+├── group_vars
+│   └── all
+├── playbook.yml
+└── roles
+    └── test_role_1
+        ├── files
+        ├── handlers
+        │   └── main.yml
+        ├── meta
+        ├── tasks
+        │   └── main.yml
+        ├── templates
+        └── vars
+
+- Running this python script => KBase/Ansible/playbook_skeleton_python.py
+  - It is possible to create multiple roles by adding more role names as a parameter.
+
+Example command:  ./playbook_skeleton_python.py playbook_skeleton_dir test_role_1 test_role_2 test_role_3
+
+- Running this playbook => KBase/Ansible/playbook_skeleton_playbook.yml
+  - Make sure to edit the playbook first in order to provide the right destination directory and roles.
+
+Example command:  ansible-playbook playbook_skeleton_playbook.yml --connection=local
+
+
+
+
+
+
+--------------------------------------------------------------------------------

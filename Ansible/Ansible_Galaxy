@@ -1,0 +1,15 @@
+#### Subject:   Using Ansible Galaxy (opensource repository)
+#### Author:    Caseraw
+#### Date:      03-08-2017
+
+--------------------------------------------------------------------------------
+# Examples:
+
+ansible-galaxy install username.role_name
+ansible-galaxy install tutorial.nginx,v1.8.24
+ansible-galaxy install git+https//github.com/groovemonkey/nginx.git
+ansible-galaxy install -r requirements.yml (role file with multiple role definitions)
+
+ansible-galaxy remove username.role_name
+
+--------------------------------------------------------------------------------

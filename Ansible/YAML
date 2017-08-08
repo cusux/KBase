@@ -1,0 +1,50 @@
+#### Subject:   Using YAML
+#### Author:    Caseraw
+#### Date:      03-08-2017
+
+--------------------------------------------------------------------------------
+# Define variables:
+
+first_name: Alice
+last_name:  Jackson
+free_time: 0
+
+--------------------------------------------------------------------------------
+# Lists:
+
+books = ["book1","book2"]
+
+books:
+  - book1
+  - book2
+
+--------------------------------------------------------------------------------
+# Dictionaries:
+
+languages = {"python": "excellent", "ruby": "good"}
+
+languages:
+  python: excellent
+  ruby: good
+
+--------------------------------------------------------------------------------
+# Strings:
+
+# Multiline
+hobbies: |
+  reading
+  playing
+  sleeping
+
+gavorite_quote: >
+  I love
+  to read
+  books
+
+--------------------------------------------------------------------------------
+# Quotes: (use this is it starts as a jinja2 variable)
+
+vars:
+  path: "{{ some_path }}/html/pub"
+
+--------------------------------------------------------------------------------
