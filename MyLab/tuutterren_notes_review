@@ -1,0 +1,281 @@
+[server2]
+nmcli con add type team con-name team1 ifname team1
+nmcli connection modify team1 team.config '{"runner": {"name":"activebackup"}}'
+nmcli connection modify team1 ipv4.addresses "192.168.0.100/24" ipv4.method static
+nmcli connection modify team1 ipv6.addresses "fd00:ba5e:ba11:2::1/64" ipv6.method static
+
+nmcli connection add type team-slave con-name team1-slave1 ifname slave1 master team1
+nmcli connection add type team-slave con-name team1-slave2 ifname slave2 master team1
+
+nmcli con up team1
+nmcli connection up team1-slave1
+nmcli connection up team1-slave2
+
+--------------------------------------------------------------------------------
+
+[server2]
+yum install -y unbound
+
+vim /etc/unbound/unbound.conf
+
+        interface: 0.0.0.0
+        interface: ::0
+	access-control: 172.25.2.0/24 allow
+	domain-insecure: "example.com"
+	forward-zone:
+		name: "example.com"
+		forward-addr: 172.25.254.254
+
+systemctl enable unbound
+systemctl start unbound
+
+firewall-cmd --permanent --add-service=dns
+firewall-cmd --reload
+
+--------------------------------------------------------------------------------
+
+[server2]
+yum install -y postfix
+
+vim /etc/postfix/main.cf
+
+	relayhost = [desktop2.example.com]
+	inet_interfaces = all
+	mydestination = server2.example.com, localhost.localdomain, localhost
+	mynetworks = 127.0.0.0/8, 172.25.2.0/24, [::1]/128
+
+systemctl enable postfix
+systemctl start postfix
+
+firewall-cmd --permanent --add-service=smtp
+firewall-cmd --reload
+
+	mail -s "test bericht" student@desktop2.example.com
+	Dit is een test voor desktop2.
+	.
+
+	mail -s "test bericht" student@server2.example.com
+	Dit is een test voor server2.
+	.
+
+--------------------------------------------------------------------------------
+
+[server2]
+yum groups install -y file-server network-file-system-client
+
+systemctl enable target
+systemctl start target
+
+fdisk /dev/vdb
+partprobe /dev/vdb1
+
+targetcli
+	/backstores/block> create disk1 dev=/dev/vdb1
+	/iscsi> create wwn=iqn.2014-06.com.example:server2.zoidberg
+	/iscsi/iqn.20...erg/tpg1/luns> create /backstores/block/disk1
+	/iscsi/iqn.20...erg/tpg1/acls> create wwn=iqn.2014-06.com.example:desktop2
+	/iscsi/iqn.20.../tpg1/portals> create 172.25.2.11
+
+systemctl restart target
+
+firewall-cmd --permanent --add-port=3260/tcp
+firewall-cmd --reload
+
+--------------------------------------------------------------------------------
+
+[server2]
+yum groups install -y file-server network-file-system-client
+
+wget -O /etc/krb5.keytab http://classroom.example.com/pub/keytabs/server2.keytab
+
+mkdir -p /exports/hypnotoad
+chmod 1777 /exports/hypnotoad/
+chgrp nfsnobody /exports/hypnotoad/
+
+semanage fcontext -a -t nfs_t '/exports/hypnotoad(/.*)?'
+restorecon -Rv /exports
+
+vim /etc/sysconfig/nfs
+	RPCNFSDARGS="-V 4.2"
+
+vim /etc/exports
+	/exports/hypnotoad      172.25.2.0/24(rw,sync,sec=krb5p,no_root_squash)
+
+showmount -e localhost
+
+firewall-cmd --permanent --add-service=nfs
+firewall-cmd --reload
+
+[desktop2]
+mkdir -p /mnt/hypnotoad
+
+vim /etc/fstab
+	server2.example.com:/exports/hypnotoad  /mnt/hypnotoad  nfs  _netdev,defaults,v4.2,sec=krb5p 0 0
+
+systemctl enable nfs-secure
+systemctl start nfs-secure
+
+mount -a
+df -h
+
+--------------------------------------------------------------------------------
+
+[server2]
+yum groups install -y file-server network-file-system-client
+
+mkdir -p /exports/bigbang
+groupadd -r bigbang
+chgrp bigbang /exports/bigbang/
+chmod 2770 /exports/bigbang/
+
+useradd -s /sbin/nologin -G bigbang penny
+smbpasswd -a penny
+
+semanage fcontext -a -t samba_share_t '/exports/bigbang(/.*)?'
+restorecon -Rv /exports/
+
+vim /etc/samba/smb.conf
+	workgroup = bigbang
+  security = user
+  passdb backend = tdbsam
+	[bigbang]
+		path = /exports/bigbang
+		write list = @bigbang
+
+systemctl enable smb nmb
+systemctl start smb nmb
+
+firewall-cmd --permanent --add-service=samba
+firewall-cmd --reload
+
+[desktop2]
+yum groups install -y network-file-system-client
+vim /root/creds.txt
+	username=penny
+	password=I<3Sheldon
+
+vim /etc/fstab
+	//server2.example.com/bigbang  /mnt/bigbang  cifs  _netdev,defaults,credentials=/root/creds.txt 0 0
+
+mount -a
+df -h
+
+--------------------------------------------------------------------------------
+
+[server2]
+yum groups install -y web-server-environment
+yum install -y php php-mysql mariadb-server
+
+systemctl start httpd mariadb
+systemctl enable httpd mariadb
+
+wget -O /etc/pki/tls/certs/example-ca.crt http://classroom.example.com/pub/example-ca.crt
+wget -O /etc/pki/tls/certs/www2.crt http://classroom.example.com/pub/tls/certs/www2.crt
+wget -O /etc/pki/tls/certs/webapp2.crt http://classroom.example.com/pub/tls/certs/webapp2.crt
+wget -O /etc/pki/tls/private/www2.key http://classroom.example.com/pub/tls/private/www2.key
+wget -O /etc/pki/tls/private/webapp2.key http://classroom.example.com/pub/tls/private/webapp2.key
+
+mkdir -p /srv/www2/www
+mkdir -p /srv/webapp2/www
+echo "This is www2" > /srv/www2/www/index.html
+
+mysql < /home/student/mydb.mysqldump
+mv /home/student/myapp.php /srv/webapp2/www/index.php
+
+cp /usr/share/doc/httpd-2.4.6/httpd-vhosts.conf /etc/httpd/conf.d/vhosts.conf
+vim /etc/httpd/conf.d/vhosts.conf
+
+  Listen 444 https
+  <VirtualHost *:444>
+      ServerAdmin root@server1.example.com
+      DocumentRoot /srv/www2/www
+      ServerName www2.example.com
+      ServerAlias www2.example.com
+      ErrorLog "/var/log/httpd/www2.example.com-error_log"
+      CustomLog "/var/log/httpd/www2.example.com-access_log" common
+
+      SSLEngine on
+      SSLCertificateFile /etc/pki/tls/certs/www2.crt
+      SSLCertificateKeyFile /etc/pki/tls/private/www2.key
+      SSLCertificateChainFile /etc/pki/tls/certs/example-ca.crt
+
+      <Directory "/srv/www2/www">
+          AllowOverride none
+          Require all granted
+          Options Indexes FollowSymLinks
+      </Directory>
+  </VirtualHost>
+
+  <VirtualHost *:444>
+      ServerAdmin root@server1.example.com
+      DocumentRoot /srv/webapp2/www
+      ServerName webapp2.example.com
+      ServerAlias webapp2.example.com
+      ErrorLog "/var/log/httpd/webapp2.example.com-error_log"
+      CustomLog "/var/log/httpd/webapp2.example.com-access_log" common
+
+      SSLEngine on
+      SSLCertificateFile /etc/pki/tls/certs/webapp2.crt
+      SSLCertificateKeyFile /etc/pki/tls/private/webapp2.key
+      SSLCertificateChainFile /etc/pki/tls/certs/example-ca.crt
+
+      <Directory "/srv/webapp2/www">
+          AllowOverride none
+          Require all granted
+          Options Indexes FollowSymLinks
+      </Directory>
+  </VirtualHost>
+
+httpd -t
+httpd -S
+
+semanage fcontext -a -t httpd_sys_content_t '/srv/www2(/.*)?'
+semanage fcontext -a -t httpd_sys_content_t '/srv/webapp2(/.*)?'
+restorecon -Rv /srv
+semanage port -a -t http_port_t -p tcp 444
+
+firewall-cmd --permanent --add-service={http,https}
+firewall-cmd --permanent --add-port=444/tcp
+firewall-cmd --reload
+
+systemctl restart httpd
+
+--------------------------------------------------------------------------------
+
+[desktop2]
+mkdir ~/bin
+vim ~/bin/myusers
+
+	#!/bin/bash
+	if [ "$#" -eq 0 ]; then
+		echo "$(basename $0) userlist"
+		echo "$(basename $0) userinfo <USERNAME>"
+	fi
+
+	case $1 in
+		userlist)
+		        grep -v ':/sbin/nologin$' /etc/passwd | cut -d: -f1 | sort
+		;;
+		userinfo)
+		        if [ "$2" == "" ]; then
+		                echo "Please specify a username"
+		                exit 132
+		        fi
+		        if ! getent passwd $2 &> /dev/null; then
+		                echo "invalid user"
+		                exit
+		        fi
+		        getent passwd $2 | cut -d: -f7
+		;;
+		*)
+		        exit
+		;;
+	esac
+
+chmod +x ~/bin/myusers
+cd ~/bin
+./myusers
+./myusers userlist
+./myusers userinfo student
+
+--------------------------------------------------------------------------------

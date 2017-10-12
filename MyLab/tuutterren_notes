@@ -1,0 +1,511 @@
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1)  Authconfig
+    ### Regular client OpenLDAP configuration:
+
+    $ yum groups install "Directory Client"
+
+    $ authconfig --enableldap --enableldapauth --enableldaptls \
+    --ldapserver=ldap://dc-mentos.dev.ops \
+    --ldapbasedn="dc=dev,dc=ops" \
+    --ldaploadcacert="ftp://192.168.1.223/pub/lab1/ca.crt" \
+    --enablemkhomedir --update
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Kerberized authentication:
+
+    $ yum groups install "Directory Client"
+    $ yum install nss-pam-ldapd pam_krb5
+
+    $ authconfig-tui
+      ### Check boxes for:
+        [x] Use LDAP
+        [x] Use Shadow Passwords
+        [x] Use LDAP Authentication
+        [x] Use Kerberos
+        [x] Local authorisation is sufficient
+          [v] NEXT
+        [x] Use TLS:
+          - Server: ldap://dc-mentos.dev.ops
+          - Base DN: dc=dev,dc=ops
+          [v] NEXT
+        [x] Use DNS to resolve hosts to realms
+        [x] Use DNS to locate KDCs for realms
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### IPA-client authentication:
+        # Preferred method is to set IPA-server as DNS for IPA-client.
+
+    $ yum install ipa-client
+    $ ipa-client-install
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+2)  iSCSI - target & initiator:
+    ### Target
+
+    $ yum install targetcli
+    $ targetcli
+
+      ### Create a block device
+      > cd backstores/block
+      > create dev=/dev/vdb name=vdb
+
+      ### Create iqn on sharing server
+      > cd /
+      > cd iscsi
+      > create wwn=iqn.2017-10.ops.dev:vdb
+
+      ### Create luns on the sharing server
+      > cd iqn.2017-10.ops.dev:vdb/tpg1/luns
+      > create /backstores/block/vdb
+
+        ### Fetch below part from iscsi initiator (client)
+        $ yum install iscsi-initiator-utils
+        $ cat /etc/iscsi/initiatorname.iscsi
+          InitiatorName=iqn.1994-05.com.redhat:3c43172df2d0
+
+      ### Create access to initiator (client)
+      > cd ../acls
+      > create wwn=iqn.1994-05.com.redhat:3c43172df2d0
+
+      > exit
+
+    $ systemctl start target
+    $ systemctl enable target
+
+    $ firewall-cmd --permanent --add-service=iscsi-target
+    $ firewall-cmd --reload
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Initiator
+        # See "man iscsiadm" for examples.
+
+    $ yum install iscsi-initiator-utils
+
+    ### Discover:
+    $ iscsiadm --mode discoverydb --type sendtargets --portal 192.168.1.60 --discover
+
+    ### Login:
+    $ iscsiadm --mode node --targetname iqn.2017-10.ops.dev:vdb --portal 192.168.1.60:3260 --login
+
+    ### Logout:
+    $ iscsiadm --mode node --targetname iqn.2017-10.ops.dev:vdb --portal 192.168.1.60:3260 --logout
+
+    ### Delete!!!:
+    $ iscsiadm --mode node --targetname iqn.2017-10.ops.dev:vdb -o delete
+
+    ### Troubleshoot stuff:
+    $ iscsiadm -m discovery -P 0
+    $ iscsiadm -m discovery -P 1 (extra level of verbosity)
+
+    $ iscsiadm -m node -P 0
+    $ iscsiadm -m node -P 1 (extra level of verbosity)
+
+    $ iscsiadm -m session -P 0
+    $ iscsiadm -m session -P 1 (extra level of verbosity, goes to 3)
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Add iscsi shared disk to /etc/fstab
+    $ vi /etc/fstab
+
+      ### Add this line:
+      UUID=011dd0ac-f8b6-4790-b78c-25ab0b1ad8ce  /san  ext4  defaults,auto,_netdev 0 0
+
+    $ mount -a
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+3)  System performance:
+    ### Overview:
+    - top               : display Linux processes
+    - iostat or iotop   : information about I/O
+    - vmstat            : Report virtual memory statistics
+    - sar               : Collect, report, or save system activity information
+    - ps                : report a snapshot of the current processes
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+4)  System optimisation:
+    ### Overview:
+    - /proc/            : system information in files
+    - /sys/             : hardware information in files
+    - /proc/sys         : runtime system optimisation "files"
+    - sysctl            : runtime system optimisation "sysctl"
+    - /etc/sysctl.d/    : runtime system optimisation "persistent"
+    - tuned             : dynamic adaptive system tuning daemon
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+5)  Networking:
+    ### See "man nmcli-examples" for examples.
+    ### "brctl" see bridge information.
+    ### "teamdctl" see teaming information.
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Regular IPv4 connection:
+
+    $ nmcli con add type ethernet \
+    ifname eth0 \
+    con-name eth0 \
+    ipv4.address 192.168.1.50/24 \
+    ipv4.gateway 192.168.1.1 \
+    ipv4.dns 192.168.1.1 \
+    ipv4.method manual \
+    autoconnect yes
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Regular Team connection:
+    ### Example JSON config files: /usr/share/doc/teamd-1.25/example_configs/
+    ### Make sure "teamd" is running at the end
+
+    $ nmcli con add type team ifname team0 con-name team0 \
+    ipv4.address 10.0.1.10/24 \
+    ipv4.gateway 10.0.1.1 \
+    ipv4.dns 10.0.1.1 \
+    ipv4.method manual \
+    autoconnect yes
+
+    $ nmcli con add type team-slave ifname ens9 con-name team0-1 master team0
+    $ nmcli con add type team-slave ifname ens10 con-name team0-2 master team0
+
+    $ nmcli con up team0
+    $ nmcli con up team0-1
+    $ nmcli con up team0-2
+
+    $ teamdctl team0 state
+
+    ### Change team runner or set config
+    ### Choose from: broadcast, roundrobin, activebackup, loadbalance, lacp
+
+    $ nmcli con mod team0 config '{"runner": {"name": "loadbalance"}}'
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### IP route:
+
+    $ mcli con mod team0 +ipv4.routes "192.168.1.0/24 10.0.1.10"
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+6)  Firewall:
+    ### Location for firewalld XML's: /usr/lib/firewalld AND /erc/firewalld
+    ### See "man firewalld.richlanguage"
+    ### Location for protocls: /etc/protocols
+
+    $ firewall-cmd --list-all
+
+    $ firewall-cmd --list-services
+
+    $ firewall-cmd --get-default-zone
+
+    $ firewall-cmd --get-active-zones
+
+    $ firewall-cmd --get-zones
+
+    $ firewall-cmd --permanent --add-service=ssh
+
+    $ firewall-cmd --permanent --add-port=123/tcp
+
+    $ firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address=192.168.1.105 reject'
+
+    $ firewall-cmd --permanent --add-rich-rule='rule service name=http log limit value=3/m accept'
+
+    $ firewall-cmd --permanent --add-rich-rule='rule protocol value=chaos accept'
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Masquerade:
+    ### Split interfaces on machine to public zone and internal zone
+        Public gets masquerade on
+
+    $ firewall-cmd --zone=public --add-masquerade --permanent
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Port forward:
+
+    $ firewall-cmd --zone=public --add-forward-port=port=2222:proto=tcp:toport=22:toaddr=10.0.1.20
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+6)  Web server:
+
+    ### Basic install/setup:
+    $ yum groups install "Basic Web Server"
+    $ firewall-cmd --permanent --add-service={http,https}
+    $ systemctl start httpd
+    $ systemctl enable httpd
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Custome web directories:
+      ### Set SELinux labels on custom web directory:
+      $ semanage fcontext -a -t httpd_sys_content_t '/opt/websites(/.*)?'
+      $ restorecon -Rv websites/
+
+      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      ### Edit httpd config, add below:
+      $ vi /etc/httpd/conf/httpd.conf
+
+      <Directory "/opt/websites/">
+          Options Indexes FollowSymLinks
+          AllowOverride None
+          Require all granted
+      </Directory>
+
+      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      ### Add http conf file for each virtual host:
+      $ cd /etc/httpd/conf.d
+      $ vi intranet.conf
+
+      <VirtualHost *:80>
+      ServerAdmin kasra@caseraw.com
+      DocumentRoot /opt/websites/intranet
+      ServerName intranet.dev.ops
+      ErrorLog logs/intranet.dev.ops-error_log
+      CustomLog logs/intranet.dev.ops-custom_log combined
+      </VirtualHost>
+
+      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      ### Add default http conf file:
+      $ cd /etc/httpd/conf.d
+      $ vi default_.conf
+
+      <VirtualHost _default_:80>
+      ServerAdmin kasra@caseraw.com
+      DocumentRoot /var/www/html
+      </VirtualHost>
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Create restricted site:
+    $ vi /etc/httpd/conf/httpd.conf
+
+    <Directory "/opt/websites/intranet">
+        AuthType Basic
+        AuthName "secret files"
+        AuthUserFile /opt/websites/intranet_htpassword
+        Require valid-user
+    </Directory>
+
+    $ htpasswd -c /opt/websites/intranet_htpassword ldapuser1
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### TLS secured site:
+
+    ### Generate self signed certificate.
+    $ genkey intranet
+
+    ### Add tls config for specified virtual host:
+    $ cd /etc/httpd/conf.d
+    $ vi intranet_ssl.conf
+
+    <VirtualHost *:443>
+    ServerAdmin kasra@caseraw.com
+    ServerName intranet.dev.ops
+    DocumentRoot /opt/websites/intranet
+    SSLEngine on
+    SSLCertificateFile /etc/pki/tls/certs/su02-server1.lab1.com.crt
+    SSLCertificateKeyFile /etc/pki/tls/private/su02-server1.lab1.com.key
+    ErrorLog logs/intranet_ssl.dev.ops-error_log
+    CustomLog logs/intranet_ssl.dev.ops-custom_log combined
+    </VirtualHost>
+
+    ### Add redirect from HTTP to HTTPS:
+    $ cd /etc/httpd/conf.d
+    $ vi intranet.conf
+
+    <VirtualHost *:80>
+    ServerName intranet.dev.ops
+    Redirect / https://intranet.dev.ops
+    </VirtualHost>
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+6)  Cache only DNS:
+
+    $ yum install unbound
+    $ systemctl start unbound
+    $ systemctl enable unbound
+
+    $ vi /etc/unbound/unbound.conf
+
+      ### Add these lines
+      interface: 0.0.0.0
+      interface: ::0
+
+      access-control: 192.168.1.0/0 allow
+
+      forward-zone:
+              name: "."
+              forward-addr: 192.168.1.105
+
+      domain-insecure: "example.com"
+
+    $ unbound-checkconf
+    $ systemctl restart unbound
+    $ firewall-cmd --permanent --add-service=dns
+    $ firewall-cmd --reload
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Unbound cache dumps:
+
+    ### Dump in stdout:
+    $ unbound-control dump_cache
+
+    ### Save dump:
+    $ unbound-control dump_cache > dns_cache
+
+    ### Flush cache for domain:
+    $ unbound-control flush example.com
+
+    ### Load cache:
+    $ unbound-control load_cache < dns_cache
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+6)  NFS:
+
+    ### Share NFS:
+    $ yum install nfs-utils
+    $ systemctl start nfs-server
+    $ systemctl enable nfs-server
+    $ vi /etc/exports
+
+      ### add below lines to file
+      /nfs/public     *(rw,no_root_squash)
+      /nfs/private    *(ro)
+
+    $ exportfs -ar
+    $ showmount -e localhost
+
+    $ semanage fcontext -a -t nfs_t '/nfs/public(/.*)?'
+    $ semanage fcontext -a -t nfs_t '/nfs/private(/.*)?'
+    $ restorecon -Rv /nfs
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Mount with NFS:
+    $ mount 192.168.1.81:/nfs/private /remote/private
+    $ mount 192.168.1.81:/nfs/public /remote/public
+
+    $ vi /etc/fstab
+
+      ### Add these lines:
+      192.168.1.81:/nfs/private /remote/private   nfs   _netdev   0 0
+      192.168.1.81:/nfs/public  /remote/public    nfs   _netdev   0 0
+
+    $ mount -a
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Kerberized NFS:
+    ### Make sure you have the correct krb5.keytab file. This may come from the IPA server.
+      ### On IPA server add service principal for nfs, nfs/server4.dev.ops
+      $ kinit admin
+      $ ipa-getkeytab -s dc-mentos.dev.ops -p nfs/server4.dev.ops -k /etc/krb5.keytab
+
+      ### Or just copy the provided krb5.keytab file to /etc/krb5.keytab
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Share Kerberized NFS:
+    $ vi /etc/exports
+
+      ### add below lines to file
+      /nfs/secret     *(rw,sec=krb5p)
+
+    $ exportfs -ar
+    $ showmount -e localhost
+    $ systemctl start nfs-sercure-server
+
+    $ semanage fcontext -a -t nfs_t '/nfs/secret(/.*)?'
+    $ restorecon -Rv /nfs/secret
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Mount Kerberized NFS:
+    $ yum groups install "Network File System Client"
+    $ systemctl start nfs-sercure
+
+    $ mount -o sec=krb5p 192.168.1.81:/nfs/secret /remote/secret
+
+    $ vi /etc/fstab
+
+      ### Add these lines:
+      192.168.1.81:/nfs/secret /remote/secret   nfs   sec=krb5p,_netdev   0 0
+
+    $ mount -a
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+6)  SMB:
+
+    ### Configure and share on Samba server:
+
+    $ yum install cifs_utils samba
+
+    ### Create samba users:
+    $ groupadd sambagroup
+    $ useradd -s /sbin/nologin -G sambagroup sambauser1
+    $ smbpassword -a sambauser1
+
+    ### Create directory ad group settings:
+    $ mkdir /sambashare
+    $ chgrp sambagroup /sambashare
+    $ chmod g+w /sambashare
+
+    $ cp /etc/samba/smb.conf.example /etc/smb.conf
+    $ vi /etc/samba/smb.conf
+
+    ### Add or edit these lines:
+
+    [sambashare]
+        comment = My Samba Share
+        path = /sambashare
+        write list = @sambagroup
+
+    $ testparm
+
+    $ systemctl start smb nmb
+    $ systemctl enable smb nmb
+
+    $ firewall-cmd --permanent --add-service=samba
+    $ firewall-cmd --reload
+
+    $ semanage fcontect -a -t samba_share_t '/sambashare(/.*)?'
+    $ restorecon -Rv /sambashare
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Mount to SMB share:
+    ### Use "_netdev" option in fstab
+
+    $ yum install cifs_utils samba-client
+
+    ### Check available shares on samba server
+    $ smbclient -L sambahost
+
+    ### Test the mount:
+    $ mount -o username=sambauser1 //sambaserver/sambashare /mnt/point
+
+    ### Create credential file
+    $ vi /root/creditsfile
+
+      ### Add user details to file:
+      username=sambauser1
+      password=password
+
+    $ vi /etc/fstab
+
+      ### Add this line:
+      //sambaserver/sambashare  /sambamount cifs  credentials=/root/creditsfile,_netdev 0  0
+
+    $ mkdir /sambamount
+    $ mount -a
+
+    $ firewall-cmd --permanent --add-service=samba-client
+    $ firewall-cmd --reload
+
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ### Multiuser mount:
+
+    ### Create credential file
+    $ vi /root/multicreditsfile
+
+      ### Add user details to file.
+      username=sambauser1
+      password=password
+
+    $ vi /etc/fstab
+
+      ### Add this line:
+      //sambaserver/sambashare  /sambamultiuser cifs  credentials=/root/creditsfile,multiuser,sec=ntlmssp_netdev 0  0
+
+    $ su - allowed_user1
+    $ cifscreds add sambaserver
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+7)  Mail:
